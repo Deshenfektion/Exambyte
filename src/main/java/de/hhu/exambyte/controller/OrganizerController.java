@@ -1,4 +1,4 @@
-package de.hhu.exambyte.controllers;
+package de.hhu.exambyte.controller;
 
 public class OrganizerController {
 }
