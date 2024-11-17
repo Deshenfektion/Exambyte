@@ -1,3 +1,8 @@
 /build/
 /.gradle/
 /application.properties
+
+# IDE-spezifische Dateien
+.idea/
+.vscode/
+.name/
