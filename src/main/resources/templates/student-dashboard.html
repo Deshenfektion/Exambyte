@@ -6,6 +6,10 @@
     <title>Student Homepage</title>
   </head>
   <body>
-    <p>nicht</p>
+    <h1>Student Dashboard</h1>
+    <ul>
+      <li th:each="test : ${tests}">
+        <a th:href="@{'/tests/' + ${test.id}}">Test [[${test.id}]]</a>
+    </ul>
   </body>
 </html>
