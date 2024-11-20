@@ -1,11 +1,13 @@
 package de.hhu.exambyte.configuration;
 
+import de.hhu.exambyte.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+
 
 @Configuration
 @EnableMethodSecurity
@@ -14,10 +16,16 @@ public class SecurityConfiguration {
         @Bean
         public SecurityFilterChain configure(HttpSecurity http) throws Exception {
             http
-                    .authorizeHttpRequests(authorize -> authorize
+                    .authorizeHttpRequests(configurer -> configurer
+                            .requestMatchers("/organizer").hasRole("ORGANIZER")
+                            .requestMatchers("/student").hasRole("STUDENT")
+                            .requestMatchers("/corrector").hasRole("CORRECTOR")
                             .anyRequest().authenticated()
                     )
-                    .oauth2Login(Customizer.withDefaults());
+                    .oauth2Login(config ->
+                            config.userInfoEndpoint(
+                                    info->info.userService(new UserService())
+                            ));
 
             return http.build();
         }
