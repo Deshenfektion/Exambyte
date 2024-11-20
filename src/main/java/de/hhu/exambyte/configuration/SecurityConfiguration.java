@@ -17,9 +17,6 @@ public class SecurityConfiguration {
         public SecurityFilterChain configure(HttpSecurity http) throws Exception {
             http
                     .authorizeHttpRequests(configurer -> configurer
-                            .requestMatchers("/organizer").hasRole("ORGANIZER")
-                            .requestMatchers("/student").hasRole("STUDENT")
-                            .requestMatchers("/corrector").hasRole("CORRECTOR")
                             .anyRequest().authenticated()
                     )
                     .oauth2Login(config ->
