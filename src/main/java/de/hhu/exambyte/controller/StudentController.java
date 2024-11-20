@@ -2,6 +2,7 @@ package de.hhu.exambyte.controller;
 
 import de.hhu.exambyte.model.Test;
 import de.hhu.exambyte.service.TestService;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ public class StudentController {
     private TestService testService;
 
     @GetMapping("")
+    @Secured("ROLE_STUDENT")
     public String showStudentDashboard(Model model) {
         List<Test> availableTests = testService.getAvailableTests();
         model.addAttribute("tests", availableTests);
