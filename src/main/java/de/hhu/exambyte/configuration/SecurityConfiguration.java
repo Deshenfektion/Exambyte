@@ -21,9 +21,8 @@ public class SecurityConfiguration {
                     )
                     .oauth2Login(config ->
                             config.userInfoEndpoint(
-                                    info->info.userService(new UserService())
+                                    info -> info.userService(new AppUserService())
                             ));
-
             return http.build();
         }
 }
