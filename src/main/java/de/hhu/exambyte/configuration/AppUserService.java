@@ -22,7 +22,9 @@ public class AppUserService implements OAuth2UserService<OAuth2UserRequest, OAut
         System.out.println("User Service called");
         OAuth2User originalUser = defaultService.loadUser(userRequest);
         Set<GrantedAuthority> authorities = new HashSet<>(originalUser.getAuthorities());
-        if ("SahneJoghurt".equals(originalUser.getAttribute("login"))) {
+        if (("SahneJoghurt").equals(originalUser.getAttribute("login"))) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_CORRECTOR"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_ORGANIZER"));
             authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
         }
         return new DefaultOAuth2User(authorities, originalUser.getAttributes(), "id");
