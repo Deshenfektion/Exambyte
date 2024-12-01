@@ -27,6 +27,11 @@ public class AppUserService implements OAuth2UserService<OAuth2UserRequest, OAut
             authorities.add(new SimpleGrantedAuthority("ROLE_ORGANIZER"));
             authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
         }
+        else if (("DEIN GITHUB USERNAME HIER REIN PLS").equals(originalUser.getAttribute("login"))) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_CORRECTOR"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_ORGANIZER"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
+        }
         return new DefaultOAuth2User(authorities, originalUser.getAttributes(), "id");
     }
 }
