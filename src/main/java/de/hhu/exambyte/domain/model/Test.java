@@ -1,4 +1,4 @@
-package de.hhu.exambyte.model;
+package de.hhu.exambyte.domain.model;
 
 public class Test {
     private String name;

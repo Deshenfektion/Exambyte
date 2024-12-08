@@ -1,4 +1,4 @@
-package de.hhu.exambyte;
+package de.hhu.exambyte.controllerTest;
 
 public class CorrectorControllerTest {
 }

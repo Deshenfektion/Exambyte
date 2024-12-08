@@ -1,6 +1,6 @@
-package de.hhu.exambyte.service;
+package de.hhu.exambyte.application.service;
 
-import de.hhu.exambyte.model.Test;
+import de.hhu.exambyte.domain.model.Test;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

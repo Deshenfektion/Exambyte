@@ -1,9 +1,8 @@
 package de.hhu.exambyte.controller;
 
-import de.hhu.exambyte.model.Test;
-import de.hhu.exambyte.service.TestService;
+import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.application.service.TestService;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
