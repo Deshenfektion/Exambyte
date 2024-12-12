@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Student Dashboard</title>
+  </head>
+  <body>
+    <h2>Verfügbare Tests</h2>
+    <ul>
+      <li th:each="test : ${tests}">
+        <a
+          th:href="@{/student/test/{id}(id=${test.id})}"
+          th:text="${test.name}"
+        ></a>
+      </li>
+    </ul>
+  </body>
+</html>
