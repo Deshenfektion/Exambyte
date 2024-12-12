@@ -9,17 +9,42 @@ import java.util.List;
 @Service
 public class TestService {
 
-    public List<Test> getAvailableTests() {
-        Test test1 = new Test("Test1", 01);
-        Test test2 = new Test("Test2", 02);
-        Test test3 = new Test("Test3", 03);
-        List<Test> tests = new ArrayList<>();
-        tests.add(test1);
-        tests.add(test2);
-        tests.add(test3);
-        return tests;
+    private List<Test> loadTestsFromDatabaseForStudents() {
+        // TODO: Implementiere Datenbankabfrage
+        // Vorübergehend: Rückgabe einer leeren Liste oder Mockdaten
+        return new ArrayList<>();
     }
 
-/*    public Test createTest() {
-    }*/
+    private List<Test> loadTestsFromDatabaseForOrganizers() {
+        // TODO: Implementiere Datenbankabfrage
+        // Vorübergehend: Rückgabe einer leeren Liste oder Mockdaten
+        return new ArrayList<>();
+    }
+
+    private List<Test> loadTestsFromDatabaseForCorrectors() {
+        // TODO: Implementiere Datenbankabfrage
+        // Vorübergehend: Rückgabe einer leeren Liste oder Mockdaten
+        return new ArrayList<>();
+    }
+
+    public List<Test> getTestsForStudents() {
+        // Tests: veröffentlicht + vor Endzeitpunkt
+        return loadTestsFromDatabaseForStudents();
+    }
+
+    public List<Test> getTestsForOrganizers() {
+        // Alle Tests
+        return loadTestsFromDatabaseForOrganizers();
+    }
+
+    public List<Test> getTestsForCorrectors() {
+        // Tests: Unkorrigierte Freitextaufgaben
+        return loadTestsFromDatabaseForCorrectors();
+    }
+
+    public Test getTestById(String id) {
+        // Datenbankabfrage
+        // return Test
+    }
+
 }

@@ -27,7 +27,6 @@ public class StudentController {
         System.out.println(auth);
         m.addAttribute("name", login);
 
-        // Alle Tests, die veröffenlicht worden und noch bearbeitbar sind
         List<Test> allTests = testService.getTestsForStudents();
         m.addAttribute("tests", allTests);
 
@@ -36,7 +35,7 @@ public class StudentController {
 
     @GetMapping("/test/{id}")
     @Secured("ROLE_STUDENT")
-    public String viewTest(@PathVariable Long id, Model model) {
+    public String viewTest(@PathVariable String id, Model model) {
         Test test = testService.getTestById(id);
         model.addAttribute("test", test);
         return "student-test-view";

@@ -21,7 +21,7 @@ import de.hhu.exambyte.service.TestService;
 public class OrganizerController {
 
     @Autowired
-    private TestService testService;
+    private de.hhu.exambyte.application.service.TestService testService;
 
     @GetMapping("")
     @Secured("ROLE_ORGANIZER")
@@ -30,8 +30,8 @@ public class OrganizerController {
         System.out.println(auth);
         m.addAttribute("name", login);
 
-        List<Test> allTests = testService.getAllTests();
-        model.addAttribute("tests", allTests);
+        List<Test> allTests = testService.getTestsForOrganizers();
+        m.addAttribute("tests", allTests);
 
         return "organizer-dashboard";
     }
@@ -54,7 +54,7 @@ public class OrganizerController {
 
     @GetMapping("/test/{id}")
     @Secured("ROLE_ORGANIZER")
-    public String viewTest(@PathVariable Long id, Model model) {
+    public String viewTest(@PathVariable String id, Model model) {
         Test test = testService.getTestById(id);
         model.addAttribute("test", test);
         return "test-details";
