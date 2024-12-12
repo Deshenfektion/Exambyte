@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Organizer Dashboard</title>
+  </head>
+  <body>
+    <form action="/organizer/new-test" method="get">
+      <button type="submit">Neuer Test</button>
+    </form>
+    <a href="/organizer/new-test">Neuer Test</a>
+
+    <h2>Alle Tests</h2>
+    <ul>
+      <li th:each="test : ${tests}">
+        <a
+          th:href="@{/organizer/test/{id}(id=${test.id})}"
+          th:text="${test.name}"
+        ></a>
+      </li>
+    </ul>
+  </body>
+</html>

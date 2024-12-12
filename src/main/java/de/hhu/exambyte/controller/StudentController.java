@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,15 +26,19 @@ public class StudentController {
         String login = auth.getPrincipal().getAttribute("login");
         System.out.println(auth);
         m.addAttribute("name", login);
-        return "student-dashboard";
-    }
-    public String showStudentDashboard(Model model) {
-        List<Test> availableTests = testService.getAvailableTests();
-        model.addAttribute("tests", availableTests);
+
+        // Alle Tests, die veröffenlicht worden und noch bearbeitbar sind
+        List<Test> allTests = testService.getTestsForStudents();
+        m.addAttribute("tests", allTests);
+
         return "student-dashboard";
     }
 
-/*    public String showNewTest() {
-
-    }*/
+    @GetMapping("/test/{id}")
+    @Secured("ROLE_STUDENT")
+    public String viewTest(@PathVariable Long id, Model model) {
+        Test test = testService.getTestById(id);
+        model.addAttribute("test", test);
+        return "student-test-view";
+    }
 }

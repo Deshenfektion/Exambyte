@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title th:text="${test.name}">Test Ansicht</title>
+  </head>
+  <body>
+    <h1 th:text="${test.name}">Test Name</h1>
+
+    <p>
+      Ergebnisse werden veröffentlicht am:
+      <span
+        th:text="${#temporals.format(test.resultReleaseDate, 'dd.MM.yyyy HH:mm')}"
+      >
+        Keine Angabe
+      </span>
+    </p>
+
+    <form th:action="@{/student/test/{id}/start(id=${test.id})}" method="post">
+      <button type="submit">Starten</button>
+    </form>
+  </body>
+</html>

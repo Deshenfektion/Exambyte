@@ -1,8 +1,10 @@
 /build/
 /.gradle/
 /application.properties
+to-do
 
 # IDE-spezifische Dateien
 .idea/
 .vscode/
 .name/
+*.class
