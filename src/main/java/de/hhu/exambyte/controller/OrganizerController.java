@@ -1,15 +1,27 @@
 package de.hhu.exambyte.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import de.hhu.exambyte.model.Test;
+import de.hhu.exambyte.service.TestService;
 
 @Controller
 @RequestMapping("/organizer")
 public class OrganizerController {
+
+    @Autowired
+    private TestService testService;
 
     @GetMapping("")
     @Secured("ROLE_ORGANIZER")
@@ -17,6 +29,35 @@ public class OrganizerController {
         String login = auth.getPrincipal().getAttribute("login");
         System.out.println(auth);
         m.addAttribute("name", login);
+
+        List<Test> allTests = testService.getAllTests();
+        model.addAttribute("tests", allTests);
+
         return "organizer-dashboard";
     }
+
+    @GetMapping("/new-test")
+    @Secured("ROLE_ORGANIZER")
+    public String newTest() {
+        return "new_test";
+    }
+
+    @PostMapping("/new-test")
+    @Secured("ROLE_ORGANIZER")
+    public String createNewTest(@RequestParam String choice) {
+        if ("ja".equalsIgnoreCase(choice)) {
+            return "redirect:/organizer/create-test";
+        } else {
+            return "redirect:/organizer";
+        }
+    }
+
+    @GetMapping("/test/{id}")
+    @Secured("ROLE_ORGANIZER")
+    public String viewTest(@PathVariable Long id, Model model) {
+        Test test = testService.getTestById(id);
+        model.addAttribute("test", test);
+        return "test-details";
+    }
+
 }

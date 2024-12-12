@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title th:text="${title}">Neuen Test erstellen?</title>
+  </head>
+  <body>
+    <h1>Neuen Test erstellen?</h1>
+    <form action="/organizer/new-test" method="post">
+      <button type="submit" name="choice" value="ja">Ja</button>
+      <button type="submit" name="choice" value="nein">Nein</button>
+    </form>
+  </body>
+</html>
