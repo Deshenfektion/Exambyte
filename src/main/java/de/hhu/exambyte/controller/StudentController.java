@@ -28,8 +28,9 @@ public class StudentController {
         System.out.println(auth);
         m.addAttribute("name", login);
 
-        List<Test> availableTests = testService.getAvailableTests();
-        m.addAttribute("tests", availableTests);
+        // Alle Tests, die veröffenlicht worden und noch bearbeitbar sind
+        List<Test> allTests = testService.getTestsForStudents();
+        m.addAttribute("tests", allTests);
 
         return "student-dashboard";
     }
