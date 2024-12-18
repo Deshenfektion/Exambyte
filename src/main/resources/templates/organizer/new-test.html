@@ -1,13 +1,91 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <title th:text="${title}">Neuen Test erstellen?</title>
-  </head>
-  <body>
-    <h1>Neuen Test erstellen?</h1>
-    <form action="/organizer/new-test" method="post">
-      <button type="submit" name="choice" value="ja">Ja</button>
-      <button type="submit" name="choice" value="nein">Nein</button>
-    </form>
-  </body>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neuen Test erstellen</title>
+
+</head>
+<body>
+<h1>Neuen Test erstellen</h1>
+
+<form th:action="@{/organizer/new-test}" method="post" id="test-form">
+
+  <div id="questions"></div>
+
+  <button type="button" class="add-question-button" onclick="addMultipleChoiceQuestion()">Neue Multiple-Choice-Frage hinzufügen</button>
+  <br><br>
+  <button type="button" class="add-question-button" onclick="addFreitextQuestion()">Neue Freitextfrage hinzufügen</button>
+  <br><br>
+  <button type="submit">Test speichern</button>
+
+</form>
+
+<script>
+  let questionCounter = 1;
+
+  function addMultipleChoiceQuestion() {
+    const questionsDiv = document.getElementById('questions');
+    const newQuestion = document.createElement('div');
+    newQuestion.className = 'question';
+    newQuestion.id = `question-${questionCounter}`;
+    newQuestion.innerHTML = `
+                <input type="text" placeholder="Formuliere deine Frage hier..." required/>
+                <div class="options">
+                    <div class="option">
+                        <input type="checkbox" name="question${questionCounter}[]" required/>
+                        <input type="text" placeholder="Antwort 1" required/>
+                        <button type="button" onclick="removeOption(this)">Löschen</button>
+                    </div>
+                    <div class="option">
+                        <input type="checkbox" name="question${questionCounter}[]" required/>
+                        <input type="text" placeholder="Antwort 2" required/>
+                        <button type="button" onclick="removeOption(this)">Löschen</button>
+                    </div>
+                </div>
+                <button type="button" onclick="addOption(${questionCounter})">Weitere Option hinzufügen</button>
+                <br><br>
+                <button type="button" onclick="removeQuestion(${questionCounter})">Frage löschen</button>
+            `;
+    questionsDiv.appendChild(newQuestion);
+    questionCounter++;
+  }
+
+  function addOption(questionId) {
+    const questionDiv = document.getElementById(`question-${questionId}`);
+    const newOption = document.createElement('div');
+    newOption.className = 'option';
+    newOption.innerHTML = `
+                <input type="checkbox" name="question${questionId}[]" required/>
+                <input type="text" placeholder="Neue Antwort..." required/>
+                <button type="button" onclick="removeOption(this)">Löschen</button>
+            `;
+    questionDiv.querySelector('.options').appendChild(newOption);
+  }
+
+  function removeOption(button) {
+    button.parentElement.remove();
+  }
+
+  function removeQuestion(questionId) {
+    const questionDiv = document.getElementById(`question-${questionId}`);
+    questionDiv.remove();
+  }
+
+  function addFreitextQuestion() {
+    const questionsDiv = document.getElementById('questions');
+    const newQuestion = document.createElement('div');
+    newQuestion.className = 'question';
+    newQuestion.innerHTML = `
+                <input type="text" placeholder="Formuliere deine Freitextfrage hier..." required/>
+                <textarea placeholder="Antwort hier..." rows="4" cols="50"></textarea>
+                <br><br>
+                <button type="button" onclick="removeQuestion(${questionCounter})">Frage löschen</button>
+            `;
+    questionsDiv.appendChild(newQuestion);
+    questionCounter++;
+  }
+</script>
+
+</body>
 </html>
