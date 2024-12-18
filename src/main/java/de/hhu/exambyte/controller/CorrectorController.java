@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import de.hhu.exambyte.interface.Question;
-import de.hhu.exambyte.model.Test;
-import de.hhu.exambyte.service.TestService;
+import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.application.service.TestService;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
@@ -31,37 +30,37 @@ public class CorrectorController {
         m.addAttribute("name", login);
 
         // Alle Tests, die unkorrigierte Freitextaufgaben enthalten
-        List<Test> allTests = testService.getTestsForCorrector();
+//        List<Test> allTests = testService.getTestsForCorrector();
 
-        return "corrector-dashboard";
+        return "corrector/dashboard";
     }
 
-    @GetMapping("/test/{id}")
-    @Secured("ROLE_CORRECTOR")
-    public String viewTest(@PathVariable String id, Model model) {
-        Test test = testService.getTestById(id);
-        model.addAttribute("test", test);
-
-        // Finde die erste Frage für den Korrektor
-        Question firstCorrectorQuestion = test.getQuestions().stream()
-                .filter(Question::forCorrector)
-                .findFirst()
-                .orElse(null);
-
-        model.addAttribute("currentQuestion", firstCorrectorQuestion);
-
-        return "corrector-test-view";
-    }
-
-    @GetMapping("test/{testId}/question/{quetionId}")
-    public String viewQuestion(@PathVariable String testId, @PathVariable String questionId, Model model) {
-        Test test = testService.getTestById(testId);
-        Question question = questionService.getQuestionById(questionId);
-
-        model.addAttribute("test", test);
-        model.addAttribute("currentQuestion", question);
-
-        return "corrector-test-view";
-    }
+//    @GetMapping("/test/{id}")
+//    @Secured("ROLE_CORRECTOR")
+//    public String viewTest(@PathVariable String id, Model model) {
+//        Test test = testService.getTestById(id);
+//        model.addAttribute("test", test);
+//
+//        // Finde die erste Frage für den Korrektor
+//        Question firstCorrectorQuestion = test.getQuestions().stream()
+//                .filter(Question::forCorrector)
+//                .findFirst()
+//                .orElse(null);
+//
+//        model.addAttribute("currentQuestion", firstCorrectorQuestion);
+//
+//        return "corrector/test-view";
+//    }
+//
+//    @GetMapping("test/{testId}/question/{quetionId}")
+//    public String viewQuestion(@PathVariable String testId, @PathVariable String questionId, Model model) {
+//        Test test = testService.getTestById(testId);
+//        Question question = questionService.getQuestionById(questionId);
+//
+//        model.addAttribute("test", test);
+//        model.addAttribute("currentQuestion", question);
+//
+//        return "corrector/test-view";
+//    }
     
 }

@@ -30,7 +30,7 @@ public class StudentController {
         List<Test> allTests = testService.getTestsForStudents();
         m.addAttribute("tests", allTests);
 
-        return "student-dashboard";
+        return "student/dashboard";
     }
 
     @GetMapping("/test/{id}")
@@ -38,6 +38,6 @@ public class StudentController {
     public String viewTest(@PathVariable String id, Model model) {
         Test test = testService.getTestById(id);
         model.addAttribute("test", test);
-        return "student-test-view";
+        return "student/test-view";
     }
 }
