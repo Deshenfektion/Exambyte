@@ -45,6 +45,7 @@ public class TestService {
     public Test getTestById(String id) {
         // Datenbankabfrage
         // return Test
+        return null;
     }
 
 }

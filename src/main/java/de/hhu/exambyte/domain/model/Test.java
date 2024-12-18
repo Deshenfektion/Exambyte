@@ -5,7 +5,7 @@ import java.util.List;
 public class Test {
     private String name;
     private String id;
-    private List<Question> questions;
+//    private List<Question> questions;
 
     public Test(String name, String id) {
         this.name = name;
