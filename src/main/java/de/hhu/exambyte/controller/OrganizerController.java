@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import de.hhu.exambyte.model.Test;
-import de.hhu.exambyte.service.TestService;
+import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.application.service.TestService;
 
 @Controller
 @RequestMapping("/organizer")
