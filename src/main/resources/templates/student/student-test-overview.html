@@ -11,12 +11,14 @@
       <span
         th:text="${#temporals.format(test.resultReleaseDate, 'dd.MM.yyyy HH:mm')}"
       >
-        Keine Angabe
       </span>
     </p>
 
-    <form th:action="@{/student/test/{id}/start(id=${test.id})}" method="post">
-      <button type="submit">Starten</button>
+    <form
+      th:action="@{/student/test/{testId}(testId=${test.id})/question/{questionId}(questionId=${firstQuestion.id})}"
+      method="get"
+    >
+      <button type="submit">Test starten</button>
     </form>
   </body>
 </html>

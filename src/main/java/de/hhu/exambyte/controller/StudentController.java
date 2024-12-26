@@ -1,6 +1,7 @@
 package de.hhu.exambyte.controller;
 
 import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.application.service.QuestionService;
 import de.hhu.exambyte.application.service.TestService;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 @RequestMapping("/student")
@@ -19,6 +22,7 @@ public class StudentController {
 
     @Autowired
     private TestService testService;
+    private QuestionService questionService;
 
     @GetMapping("")
     @Secured("ROLE_STUDENT")
@@ -33,11 +37,33 @@ public class StudentController {
         return "student-dashboard";
     }
 
-    @GetMapping("/test/{id}")
+    @GetMapping("/test/{testId}/overview")
     @Secured("ROLE_STUDENT")
-    public String viewTest(@PathVariable String id, Model model) {
-        Test test = testService.getTestById(id);
+    public String testOverview(@PathVariable String testId, Model model) {
+        Test test = testService.getTestById(testId);
         model.addAttribute("test", test);
-        return "student-test-view";
+
+        /*
+         * Question dem Spring Model hinzufügen, damit später direkt die erste Frage in
+         * der Test Session angezeigt werden kann
+         */
+        Question question = questionService.getFirstQuestion(test);
+        model.addAttribute("firstQuestion", question);
+        return "student-test-overview";
     }
+
+    /*
+     * PathVariable statt RequestParam, weil ids unerlässlich sind
+     */
+    @GetMapping("test/{id}/question/{questionId}")
+    public String testSession(@PathVariable String id, Model model) {
+        Test test = testService.getTestById(id);
+        test.setStatus("IN_PROGRESS");
+        model.addAttribute("test", test);
+
+        Question question = questionService.getNextQuestion(test);
+        model.addAttribute("question", question);
+        return "student-test-session";
+    }
+
 }

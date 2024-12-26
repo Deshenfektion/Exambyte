@@ -8,7 +8,7 @@
     <ul>
       <li th:each="test : ${tests}">
         <a
-          th:href="@{/student/test/{id}(id=${test.id})}"
+          th:href="@{/student/test/{id}(id=${test.id})/overview}"
           th:text="${test.name}"
         ></a>
       </li>
