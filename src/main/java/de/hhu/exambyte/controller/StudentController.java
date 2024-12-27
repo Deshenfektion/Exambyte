@@ -55,14 +55,20 @@ public class StudentController {
     /*
      * PathVariable statt RequestParam, weil ids unerlässlich sind
      */
-    @GetMapping("test/{id}/question/{questionId}")
+    @GetMapping("test/{testId}/question/{questionId}")
     public String testSession(@PathVariable String id, Model model) {
         Test test = testService.getTestById(id);
-        test.setStatus("IN_PROGRESS");
         model.addAttribute("test", test);
 
-        Question question = questionService.getNextQuestion(test);
-        model.addAttribute("question", question);
+        test.setStatus("IN_PROGRESS");
+        testService.setStatus(test, "IN_PROGRESS");
+
+        Question currentQuestion = questionService.getNextQuestion(test);
+        model.addAttribute("currentQuestion", currentQuestion);
+
+        List<Question> allQuestions = questionService.getAllQuestions(test);
+        model.addAttribute("allQuestions", allQuestions);
+
         return "student-test-session";
     }
 
