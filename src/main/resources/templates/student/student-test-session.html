@@ -15,11 +15,25 @@
       </li>
     </ul>
 
-    <!-- TODO: Aktuelle Frage anzeigen / rendern -->
     <div>
       <!-- question.description -->
-      <!-- if question.isMultipleChoice: show question.options -->
-      <!-- else: show.question.textfield -->
+      <h2 th:text="${currentQuestion.name}">Frage</h2>
+      <p th:text="${currentQuestion.description}">Beschreibung</p>
+      <!-- if currentQuestion.isMultipleChoice: show currentQuestion.options -->
+      <div th:if="${currentQuestion.isMultipleChoice}">
+        <ul>
+          <!-- TODO: Ausgewählte Checkbox übermitteln -->
+          <li th:each="${option : currentQuestion.options}">
+            <input type="checkbox" />
+            <button type="submit"
+          </li>
+        </ul>
+      </div>
+      <!-- else: show.currentQuestion.textfield -->
+      <div th:unless="${currentQuestion.isMultipleChoice}">
+        <!-- TODO: Eingetippte Antwort übermitteln -->
+        <textarea th:name="answer" rows="4" cols="50"></textarea>
+      </div>
     </div>
   </body>
 </html>
