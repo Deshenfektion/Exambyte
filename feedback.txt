@@ -1,1 +1,21 @@
+Feedback:
 
+Geschäftslogik: An Geschäftslogik ist momentan noch nicht viel vorhanden, das solltet ihr bald in Angriff nehmen.
+
+Architektur und Struktur: Denkt unbedingt daran, durch ArchUnit und/oder Gradle-Submodule die Einhaltung der Onion-Architektur sicherzustellen. Außerdem leuchtet mir nicht ein, warum es einen zusätzlichen main-Ordner außerhalb von src geben muss.
+
+Authentifikation und Autorisierung: Ihr solltet euch bald darum kümmern, dass die rollenabhängigen Zugriffe funktionieren, und dann auch entsprechende Tests dafür schreiben.
+
+Code: Bitte entscheidet euch für einen Formatierungs-Styleguide und schreibt in die Dokumentation, welchen ihr verwendet. Der Code scheint bis jetzt die gängigen Java-Konventionen zu erfüllen.
+
+Dokumentation: Fangt am Besten schnellstmöglich damit an, eure Dokumentation zu schreiben. Ihr wollt das vermutlich nicht alles am Ende des Projekts machen müssen.
+
+Funktionalität: Bis jetzt fehlt noch einiges von den erforderlichen Funktionen, vieles ist auch auskommentiert.
+
+Git: Ihr solltet euch entscheiden, ob ihr die Commits auf Deutsch oder auf Englisch benennen wollt, um mehr Einheitlichkeit zu schaffen, und versuchen, euch sprechende Namen auszudenken, die auch für Außenstehende einleuchtend sind. Die Arbeitsteilung scheint, von den Commits her, gut zu funktionieren. 
+
+Testing: Bis jetzt sind zwar Testklassen, aber kaum Tests vorhanden; das solltet ihr möglichst bald ändern und danach kontinuierlich weiter Tests schreiben. Schreibt zeitnah Tests, für alles an Funktionalität, was ihr hinzufügt. Selbst wenn ihr nur einen Bug fixen wollt, könnt ihr diesen mithilfe eines (in diesem Fall dann fehlschlagenden) Tests demonstrieren; sobald ihr den Bug gefixt habt, sollte der Test dann durchlaufen, das gibt euch auch mehr Sicherheit, dass der Bugfix funktioniert hat.
+
+Fazit: Bis jetzt gibt es noch einiges zu tun. Wichtige jetzt anstehende Aufgaben sind auf jeden Fall Testing, Dokumentation und die Modellierung der Geschäftslogik.
+
+Ich wünsche euch viel Erfolg mit eurem Projekt! Bei Rückfragen könnt ihr mich auf RocketChat unter dem Namen chber119 erreichen.
