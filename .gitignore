@@ -1,7 +1,8 @@
 /build/
 /.gradle/
 /application.properties
-to-do.md
+todo.md
+data
 
 # IDE-spezifische Dateien
 .idea/
