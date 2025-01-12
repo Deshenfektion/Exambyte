@@ -18,7 +18,23 @@ public class TestService {
         this.testRepository = testRepository;
     }
 
-    public Test createTest(String name, List<Question> questions, Test.TestStatus status) {
+    /*
+     * Was gehört in den Service?
+     * Orchestrierung von Domain-Objekten: Verwaltung von Tests, z. B. Erstellung
+     * oder Abruf.
+     * Persistenz: Speichern und Abrufen von Tests mithilfe des Repositories.
+     * Externe Abhängigkeiten: Kommunikation mit externen Systemen, z. B.
+     * Notification-Systeme.
+     * Anwendungslogik: Umsetzung von konkreten Use Cases, die die Domänenlogik
+     * verwenden.
+     * Beispiele für Methoden im Service:
+     * createTest(String name): Erstellt einen neuen Test und persistiert ihn.
+     * getAllTests(): Gibt alle Tests aus der Datenbank zurück.
+     * getTestsForStudents(): Filtert Tests für Studenten basierend auf Status.
+     * deleteTest(String id): Löscht einen Test aus der Datenbank.
+     */
+
+    public Test createTest(String name, Test.TestStatus status) {
         String randomId = UUID.randomUUID().toString();
 
         // Überprüfen, ob die UUID bereits in der Datenbank existiert
@@ -26,7 +42,7 @@ public class TestService {
             randomId = UUID.randomUUID().toString(); // Neue UUID generieren, falls sie bereits existiert
         }
 
-        Test newTest = new Test(name, questions, status, randomId);
+        Test newTest = new Test(name, randomId, status);
         return testRepository.save(newTest);
     }
 
