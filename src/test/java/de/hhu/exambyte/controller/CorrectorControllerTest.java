@@ -35,8 +35,8 @@ public class CorrectorControllerTest {
     }
 
     @Test
-    @WithMockOAuth2User(roles = "USER")
-    @DisplayName("Normale Benutzer können nicht auf das Corrector-Dashboard zugreifen")
+    @WithMockOAuth2User(roles = {"USER","STUDENT","ORGANIZER"})
+    @DisplayName("Unautorisierte Benutzer können nicht auf das Corrector-Dashboard zugreifen")
     void testUnauthorizedUserAccess() throws Exception {
         mockMvc.perform(get("/corrector"))
                 .andExpect(status().isForbidden());

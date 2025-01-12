@@ -35,8 +35,8 @@ public class StudentControllerTest {
     }
 
     @Test
-    @WithMockOAuth2User(roles = "USER")
-    @DisplayName("Normale Benutzer können nicht auf das Student-Dashboard zugreifen")
+    @WithMockOAuth2User(roles = {"USER","ORGANIZER", "CORRECTOR"})
+    @DisplayName("Unautorisierte Benutzer können nicht auf das Student-Dashboard zugreifen")
     void testUnauthorizedUserAccess() throws Exception {
         mockMvc.perform(get("/student"))
                 .andExpect(status().isForbidden());

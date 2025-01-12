@@ -36,8 +36,8 @@ public class OrganizerControllerTest {
     }
 
     @Test
-    @WithMockOAuth2User(roles = "USER")
-    @DisplayName("Normale Benutzer können nicht auf das Organizer-Dashboard zugreifen")
+    @WithMockOAuth2User(roles = {"USER", "STUDENT", "CORRECTOR"})
+    @DisplayName("Unautorisierte Benutzer können nicht auf das Organizer-Dashboard zugreifen")
     void testUnauthorizedUserAccess() throws Exception {
         mockMvc.perform(get("/organizer"))
                 .andExpect(status().isForbidden());
