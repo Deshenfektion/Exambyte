@@ -1,12 +1,13 @@
 package de.hhu.exambyte.application.service;
 
 import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.infrastructure.persistence.entity.TestEntity;
 import de.hhu.exambyte.infrastructure.persistence.repository.TestRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,8 +18,16 @@ public class TestService {
         this.testRepository = testRepository;
     }
 
-    public Test createTest(Test test) {
-        return testRepository.save(test);
+    public Test createTest(String name, List<Question> questions, Test.TestStatus status) {
+        String randomId = UUID.randomUUID().toString();
+
+        // Überprüfen, ob die UUID bereits in der Datenbank existiert
+        while (testRepository.existsById(randomId)) {
+            randomId = UUID.randomUUID().toString(); // Neue UUID generieren, falls sie bereits existiert
+        }
+
+        Test newTest = new Test(name, questions, status, randomId);
+        return testRepository.save(newTest);
     }
 
     public List<Test> getAllTests() {
@@ -50,5 +59,4 @@ public class TestService {
     public Test getTestById(String id) {
         return testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found with id: " + id));
     }
-
 }
