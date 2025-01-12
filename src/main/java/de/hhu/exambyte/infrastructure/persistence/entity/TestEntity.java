@@ -4,6 +4,7 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.annotation.Id;
 
+import de.hhu.exambyte.domain.model.Question;
 import de.hhu.exambyte.domain.model.Test;
 
 import java.util.List;
