@@ -7,8 +7,8 @@ public class Test {
     private final String name;
     // Wird von der Datenbank gesetzt via SERIAL PRIMARY KEY
     private String id;
-    private final List<Question> questions;
-    private final TestStatus status;
+    private List<Question> questions;
+    private TestStatus status;
 
     public Test(String name, TestStatus status) {
         this.name = name;
@@ -39,10 +39,24 @@ public class Test {
         return status;
     }
 
+    public void setStatus(TestStatus status) {
+        this.status = status;
+    }
+
     public enum TestStatus {
         INACTIVE, ACTIVE, IN_PROGRESS, COMPLETED
     }
 
+    public boolean isCompleted() {
+        return (this.status == TestStatus.COMPLETED ? true : false);
+    }
+
+    public boolean hasUncorrectedTextbasedQuestions() {
+        for (Question question : questions) {
+            return (question.isUncorrectedTextbasedQuestion() ? true : false);
+        }
+        return false;
+    }
     /*
      * Was gehört ins Domain Model?
      * Eigenschaften und Status: Attribute wie name, id, status.
