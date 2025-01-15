@@ -5,13 +5,13 @@ import java.util.List;
 
 public class Test {
     private final String name;
-    private final String id;
+    // Wird von der Datenbank gesetzt via SERIAL PRIMARY KEY
+    private String id;
     private final List<Question> questions;
     private final TestStatus status;
 
-    public Test(String name, String id, TestStatus status) {
+    public Test(String name, TestStatus status) {
         this.name = name;
-        this.id = id;
         this.questions = new ArrayList<>();
         this.status = status;
     }

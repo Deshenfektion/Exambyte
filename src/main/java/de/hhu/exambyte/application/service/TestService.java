@@ -7,7 +7,6 @@ import de.hhu.exambyte.infrastructure.persistence.repository.TestRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,14 +34,8 @@ public class TestService {
      */
 
     public Test createTest(String name, Test.TestStatus status) {
-        String randomId = UUID.randomUUID().toString();
+        Test newTest = new Test(name, status);
 
-        // Überprüfen, ob die UUID bereits in der Datenbank existiert
-        while (testRepository.existsById(randomId)) {
-            randomId = UUID.randomUUID().toString(); // Neue UUID generieren, falls sie bereits existiert
-        }
-
-        Test newTest = new Test(name, randomId, status);
         return testRepository.save(newTest);
     }
 
