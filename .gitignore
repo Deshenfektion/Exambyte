@@ -1,6 +1,7 @@
 /build/
 /.gradle/
-/application.properties
+application.properties
+application.yml
 todo.md
 data
 
