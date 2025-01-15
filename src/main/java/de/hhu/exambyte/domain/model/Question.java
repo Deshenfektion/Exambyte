@@ -1,40 +1,18 @@
 package de.hhu.exambyte.domain.model;
 
-public class Question {
-    private final String name;
-    private final String id;
-    private final QuestionType type;
-    private final boolean correctionStatus;
+public interface Question {
+    String getName();
 
-    public Question(String name, String id, QuestionType type) {
-        this.name = name;
-        this.id = id;
-        this.type = type;
-        this.correctionStatus = false;
-    }
+    String getId();
 
-    public String getName() {
-        return this.name;
-    }
+    QuestionType getQuestionType();
 
-    public String getId() {
-        return this.id;
-    }
+    boolean getCorrectionStatus();
 
-    public QuestionType getQuestionType() {
-        return this.type;
-    }
+    // Wichtig für Korrektoren
+    boolean isUncorrectedTextbasedQuestion();
 
-    public boolean getCorrectionStatus() {
-        return this.correctionStatus;
-    }
-
-    public boolean isUncorrectedTextbasedQuestion() {
-        return (this.type == Question.QuestionType.TEXT_BASED && this.correctionStatus) ? true : false;
-    }
-
-    public enum QuestionType {
+    enum QuestionType {
         MULTIPLE_CHOICE, TEXT_BASED
     }
-
 }
