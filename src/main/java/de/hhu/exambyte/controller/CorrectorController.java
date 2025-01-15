@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import de.hhu.exambyte.interface.Question;
-import de.hhu.exambyte.model.Test;
-import de.hhu.exambyte.service.TestService;
-import org.springframework.web.bind.annotation.RequestParam;
+import de.hhu.exambyte.application.service.QuestionService;
+import de.hhu.exambyte.application.service.TestService;
+import de.hhu.exambyte.domain.model.Question;
+import de.hhu.exambyte.domain.model.Test;
 
 @Controller
 @RequestMapping("/corrector")
@@ -22,6 +22,7 @@ public class CorrectorController {
 
     @Autowired
     private TestService testService;
+    private QuestionService questionService;
 
     @GetMapping("")
     @Secured("ROLE_CORRECTOR")
@@ -31,7 +32,7 @@ public class CorrectorController {
         m.addAttribute("name", login);
 
         // Alle Tests, die unkorrigierte Freitextaufgaben enthalten
-        List<Test> allTests = testService.getTestsForCorrector();
+        List<Test> allTests = testService.getTestsForCorrectors();
 
         return "corrector-dashboard";
     }
@@ -44,7 +45,7 @@ public class CorrectorController {
 
         // Finde die erste Frage für den Korrektor
         Question firstCorrectorQuestion = test.getQuestions().stream()
-                .filter(Question::forCorrector)
+                .filter(Question::isUncorrectedTextbasedQuestion)
                 .findFirst()
                 .orElse(null);
 
@@ -63,5 +64,5 @@ public class CorrectorController {
 
         return "corrector-test-view";
     }
-    
+
 }

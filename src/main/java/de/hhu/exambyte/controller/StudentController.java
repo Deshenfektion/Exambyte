@@ -1,6 +1,8 @@
 package de.hhu.exambyte.controller;
 
+import de.hhu.exambyte.domain.model.Question;
 import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.domain.model.Test.TestStatus;
 import de.hhu.exambyte.application.service.QuestionService;
 import de.hhu.exambyte.application.service.TestService;
 import org.springframework.security.access.annotation.Secured;
@@ -13,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
 @RequestMapping("/student")
@@ -56,16 +56,21 @@ public class StudentController {
      * PathVariable statt RequestParam, weil ids unerlässlich sind
      */
     @GetMapping("test/{testId}/question/{questionId}")
-    public String testSession(@PathVariable String id, Model model) {
-        Test test = testService.getTestById(id);
+    public String testSession(@PathVariable String testId, @PathVariable String questionId, Model model) {
+        Test test = testService.getTestById(testId);
         model.addAttribute("test", test);
 
-        test.setStatus("IN_PROGRESS");
-        testService.setStatus(test, "IN_PROGRESS");
+        test.setStatus(TestStatus.IN_PROGRESS);
 
-        Question currentQuestion = questionService.getNextQuestion(test);
+        // Die aktuelle Frage anhand der ID abrufen
+        Question currentQuestion = questionService.getQuestionById(questionId);
         model.addAttribute("currentQuestion", currentQuestion);
 
+        // Die nächste Frage anzeigen
+        currentQuestion = questionService.getNextQuestion(test, currentQuestion);
+        model.addAttribute("currentQuestion", currentQuestion);
+
+        // Für die Fragenübersicht in der Test Session View
         List<Question> allQuestions = questionService.getAllQuestions(test);
         model.addAttribute("allQuestions", allQuestions);
 
