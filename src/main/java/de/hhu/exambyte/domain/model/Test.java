@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Test {
-    private final String name;
+    private String name;
     // Wird von der Datenbank gesetzt via SERIAL PRIMARY KEY
     private String id;
     private List<Question> questions;
     private TestStatus status;
+
+    // Standardkonstruktor für Spring
+    public Test() {
+        this.questions = new ArrayList<>();
+    }
 
     public Test(String name, TestStatus status) {
         this.name = name;
