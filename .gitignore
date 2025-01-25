@@ -1,9 +1,9 @@
 /build/
 /.gradle/
 application.properties
-application.yml
 todo.md
 data
+.env
 
 # IDE-spezifische Dateien
 .idea/
