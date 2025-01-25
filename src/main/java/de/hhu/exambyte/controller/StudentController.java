@@ -34,7 +34,7 @@ public class StudentController {
         List<Test> allTests = testService.getTestsForStudents();
         m.addAttribute("tests", allTests);
 
-        return "student-dashboard";
+        return "student/student-dashboard";
     }
 
     @GetMapping("/test/{testId}/overview")
@@ -49,7 +49,7 @@ public class StudentController {
          */
         Question question = questionService.getFirstQuestion(test);
         model.addAttribute("firstQuestion", question);
-        return "student-test-overview";
+        return "student/student-test-overview";
     }
 
     /*
@@ -74,7 +74,7 @@ public class StudentController {
         List<Question> allQuestions = questionService.getAllQuestions(test);
         model.addAttribute("allQuestions", allQuestions);
 
-        return "student-test-session";
+        return "student/student-test-session";
     }
 
 }
