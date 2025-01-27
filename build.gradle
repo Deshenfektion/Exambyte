@@ -33,6 +33,8 @@ dependencies {
 	implementation 'org.springframework.data:spring-data-jdbc'
 	implementation 'org.postgresql:postgresql'
 	implementation 'org.flywaydb:flyway-core'
+	implementation "me.paulschwarz:spring-dotenv:4.0.0"
+
 }
 
 tasks.named('test') {
