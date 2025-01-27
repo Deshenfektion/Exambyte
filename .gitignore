@@ -4,6 +4,7 @@ application.properties
 todo.md
 data
 .env
+bin
 
 # IDE-spezifische Dateien
 .idea/
