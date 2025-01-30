@@ -1,0 +1,2 @@
+ALTER TABLE question ADD COLUMN test_id INT NOT NULL;
+ALTER TABLE question ADD CONSTRAINT fk_question_test FOREIGN KEY (test_id) REFERENCES test(id) ON DELETE CASCADE;

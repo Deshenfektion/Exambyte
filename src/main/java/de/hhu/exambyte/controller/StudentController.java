@@ -27,6 +27,8 @@ public class StudentController {
     @GetMapping("")
     @Secured("ROLE_STUDENT")
     public String indexStudent(OAuth2AuthenticationToken auth, Model model) {
+        System.out.println("GET /student wurde aufgerufen!"); // Hinzugefügt zur Fehlerdiagnose
+
         String login = auth.getPrincipal().getAttribute("login");
         System.out.println(auth);
         model.addAttribute("name", login);

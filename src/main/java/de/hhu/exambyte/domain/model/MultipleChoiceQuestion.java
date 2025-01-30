@@ -8,6 +8,7 @@ public class MultipleChoiceQuestion implements Question {
     private final QuestionType questionType;
     private boolean correctionStatus;
     private List<String> options; // Speziell für MultipleChoiceQuestion
+    private int testId;
 
     public MultipleChoiceQuestion(String name, List<String> options) {
         this.name = name;
@@ -39,6 +40,11 @@ public class MultipleChoiceQuestion implements Question {
     @Override
     public boolean isUncorrectedTextbasedQuestion() {
         return false;
+    }
+
+    @Override
+    public int getTestId() {
+        return this.testId;
     }
 
     public List<String> getOptions() {

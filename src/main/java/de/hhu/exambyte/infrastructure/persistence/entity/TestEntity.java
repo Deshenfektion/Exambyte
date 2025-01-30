@@ -1,6 +1,7 @@
 package de.hhu.exambyte.infrastructure.persistence.entity;
 
 import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.annotation.Id;
 import de.hhu.exambyte.domain.model.Question;
@@ -14,8 +15,10 @@ public class TestEntity {
     @Id
     private final int id;
     private final String name;
-    private final List<Question> questions;
     private final Test.TestStatus status;
+
+    @MappedCollection(idColumn = "test_id")
+    private final List<Question> questions;
 
     @PersistenceCreator
     public TestEntity(String name, int id, List<Question> questions, Test.TestStatus status) {

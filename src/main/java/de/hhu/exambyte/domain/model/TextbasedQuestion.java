@@ -6,6 +6,7 @@ public class TextbasedQuestion implements Question {
     private final QuestionType questionType;
     private boolean correctionStatus;
     private String description; // Speziell für TextbasedQuestions
+    private int testId;
 
     public TextbasedQuestion(String name, String description) {
         this.name = name;
@@ -22,6 +23,11 @@ public class TextbasedQuestion implements Question {
     @Override
     public int getId() {
         return this.id;
+    }
+
+    @Override
+    public int getTestId() {
+        return this.testId;
     }
 
     @Override

@@ -5,6 +5,8 @@ public interface Question {
 
     int getId();
 
+    int getTestId();
+
     QuestionType getQuestionType();
 
     boolean getCorrectionStatus();
