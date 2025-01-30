@@ -34,7 +34,8 @@ dependencies {
 	implementation 'org.postgresql:postgresql'
 	implementation 'org.flywaydb:flyway-core'
 	implementation "me.paulschwarz:spring-dotenv:4.0.0"
-
+	implementation "org.junit.jupiter:junit-jupiter-api"
+	implementation "org.springframework.boot:spring-boot-starter-actuator"
 }
 
 tasks.named('test') {
