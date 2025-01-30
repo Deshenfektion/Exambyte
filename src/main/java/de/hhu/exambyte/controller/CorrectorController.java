@@ -34,7 +34,7 @@ public class CorrectorController {
         // Alle Tests, die unkorrigierte Freitextaufgaben enthalten
         List<Test> allTests = testService.getTestsForCorrectors();
 
-        return "corrector-dashboard";
+        return "corrector/dashboard";
     }
 
     @GetMapping("/test/{id}")

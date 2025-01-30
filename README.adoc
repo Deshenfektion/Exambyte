@@ -1,0 +1,33 @@
+= Dokumentation
+
+== 1. Einleitung
+bytemeifucan ist ein neues Testsystem für die Klausurzulassung im Programmierpraktikum, das Ilias ersetzen soll.
+
+== 1.1 Projektübersicht
+bytemeifucan bietet folgende
+Hauptfunktionen:
+
+* Unterstützung der Testausführung
+* Ermöglichung manueller Korrektur von Freitextaufgaben
+* Darstellung der Ergebnisse für Studierende und Organisator:innen
+
+Das System zielt darauf ab, den Prüfungsprozess zu optimieren und eine effiziente Verwaltung der Klausurzulassung zu gewährleisten.
+
+== 2. Systemarchitektur
+* Überblick
+* (Verwendete Sprachen, Frameworks, Tools)
+
+== 3. Funktionalitäten
+* Testausführung (Testformate)
+* manuelle und automatisierte Korrektur (Workflow, Benutzeroberfläche, Bewertung)
+* Darstellung der Ergebnisse (Beschreibung der Ansicht, Datenschutz)
+
+== 4. Implementierung
+* Codestruktur, Styleguide
+* Testing, Qualitätssicherung (Unit Tests, Integrationstests, TDD)
+
+== 5. Kontaktinformationen
+Im Folgenden finden Sie die GitHub-Handles der Personen, die an der Anwendung beteiligt sind.
+
+* Ruth Kong https://github.com/SahneJoghurt[@SahneJoghurt]
+* Deshen Rao https://github.com/Deshenfektion[@Deshenfektion]

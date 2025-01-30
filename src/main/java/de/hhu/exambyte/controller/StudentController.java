@@ -20,64 +20,64 @@ import java.util.List;
 @RequestMapping("/student")
 public class StudentController {
 
-    @Autowired
-    private TestService testService;
-    private QuestionService questionService;
+        @Autowired
+        private TestService testService;
+        private QuestionService questionService;
 
-    @GetMapping("")
-    @Secured("ROLE_STUDENT")
-    public String indexStudent(OAuth2AuthenticationToken auth, Model model) {
-        System.out.println("GET /student wurde aufgerufen!"); // Hinzugefügt zur Fehlerdiagnose
+        @GetMapping("")
+        @Secured("ROLE_STUDENT")
+        public String indexStudent(OAuth2AuthenticationToken auth, Model model) {
+                System.out.println("GET /student wurde aufgerufen!"); // Hinzugefügt zur Fehlerdiagnose
 
-        String login = auth.getPrincipal().getAttribute("login");
-        System.out.println(auth);
-        model.addAttribute("name", login);
+                String login = auth.getPrincipal().getAttribute("login");
+                System.out.println(auth);
+                model.addAttribute("name", login);
 
-        List<Test> allTests = testService.getTestsForStudents();
-        System.out.println("Alle Tests für Student Dashboard: " + allTests);
-        model.addAttribute("tests", allTests);
+                List<Test> allTests = testService.getTestsForStudents();
+                System.out.println("Alle Tests für Student Dashboard: " + allTests);
+                model.addAttribute("tests", allTests);
 
-        return "student/student-dashboard";
-    }
+                return "student/student-dashboard";
+        }
 
-    @GetMapping("/test/{testId}/overview")
-    @Secured("ROLE_STUDENT")
-    public String testOverview(@PathVariable int testId, Model model) {
-        Test test = testService.getTestById(testId);
-        model.addAttribute("test", test);
+        @GetMapping("/test/{testId}/overview")
+        @Secured("ROLE_STUDENT")
+        public String testOverview(@PathVariable int testId, Model model) {
+                Test test = testService.getTestById(testId);
+                model.addAttribute("test", test);
+
+                /*
+                 * Question dem Spring Model hinzufügen, damit später direkt die erste Frage in
+                 * der Test Session angezeigt werden kann
+                 */
+                Question question = questionService.getFirstQuestion(test);
+                model.addAttribute("firstQuestion", question);
+                return "student/student-test-overview";
+        }
 
         /*
-         * Question dem Spring Model hinzufügen, damit später direkt die erste Frage in
-         * der Test Session angezeigt werden kann
+         * PathVariable statt RequestParam, weil ids unerlässlich sind
          */
-        Question question = questionService.getFirstQuestion(test);
-        model.addAttribute("firstQuestion", question);
-        return "student/student-test-overview";
-    }
+        @GetMapping("test/{testId}/question/{questionId}")
+        public String testSession(@PathVariable int testId, @PathVariable int questionId, Model model) {
+                Test test = testService.getTestById(testId);
+                model.addAttribute("test", test);
 
-    /*
-     * PathVariable statt RequestParam, weil ids unerlässlich sind
-     */
-    @GetMapping("test/{testId}/question/{questionId}")
-    public String testSession(@PathVariable int testId, @PathVariable int questionId, Model model) {
-        Test test = testService.getTestById(testId);
-        model.addAttribute("test", test);
+                test.setStatus(TestStatus.IN_PROGRESS);
 
-        test.setStatus(TestStatus.IN_PROGRESS);
+                // Die aktuelle Frage anhand der ID abrufen
+                Question currentQuestion = questionService.getQuestionById(questionId);
+                model.addAttribute("currentQuestion", currentQuestion);
 
-        // Die aktuelle Frage anhand der ID abrufen
-        Question currentQuestion = questionService.getQuestionById(questionId);
-        model.addAttribute("currentQuestion", currentQuestion);
+                // Die nächste Frage anzeigen
+                currentQuestion = questionService.getNextQuestion(test, currentQuestion);
+                model.addAttribute("currentQuestion", currentQuestion);
 
-        // Die nächste Frage anzeigen
-        currentQuestion = questionService.getNextQuestion(test, currentQuestion);
-        model.addAttribute("currentQuestion", currentQuestion);
+                // Für die Fragenübersicht in der Test Session View
+                List<Question> allQuestions = questionService.getAllQuestions(test);
+                model.addAttribute("allQuestions", allQuestions);
 
-        // Für die Fragenübersicht in der Test Session View
-        List<Question> allQuestions = questionService.getAllQuestions(test);
-        model.addAttribute("allQuestions", allQuestions);
-
-        return "student/student-test-session";
-    }
+                return "student/student-test-session";
+        }
 
 }

@@ -32,7 +32,7 @@ public class OrganizerController {
         List<Test> allTests = testService.getTestsForOrganizers();
         m.addAttribute("tests", allTests);
 
-        return "organizer-dashboard";
+        return "organizer/dashboard";
     }
 
     @GetMapping("/new-test")
@@ -58,5 +58,23 @@ public class OrganizerController {
         model.addAttribute("test", test);
         return "test-details";
     }
+    //
+    // @PostMapping("/new-test")
+    // @Secured("ROLE_ORGANIZER")
+    // public String createNewTest(@RequestParam String choice) {
+    // if ("ja".equalsIgnoreCase(choice)) {
+    // return "redirect:/organizer/create-test";
+    // } else {
+    // return "redirect:/organizer";
+    // }
+    // }
+    //
+    // @GetMapping("/test/{id}")
+    // @Secured("ROLE_ORGANIZER")
+    // public String viewTest(@PathVariable String id, Model model) {
+    // Test test = testService.getTestById(id);
+    // model.addAttribute("test", test);
+    // return "test-details";
+    // }
 
 }
