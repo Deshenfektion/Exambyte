@@ -3,7 +3,7 @@ package de.hhu.exambyte.domain.model;
 public interface Question {
     String getName();
 
-    String getId();
+    int getId();
 
     QuestionType getQuestionType();
 

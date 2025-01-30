@@ -4,7 +4,7 @@ import java.util.List;
 
 public class MultipleChoiceQuestion implements Question {
     private final String name;
-    private String id;
+    private int id;
     private final QuestionType questionType;
     private boolean correctionStatus;
     private List<String> options; // Speziell für MultipleChoiceQuestion
@@ -22,7 +22,7 @@ public class MultipleChoiceQuestion implements Question {
     }
 
     @Override
-    public String getId() {
+    public int getId() {
         return this.id;
     }
 

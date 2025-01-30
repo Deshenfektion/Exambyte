@@ -26,13 +26,14 @@ public class StudentController {
 
     @GetMapping("")
     @Secured("ROLE_STUDENT")
-    public String indexStudent(OAuth2AuthenticationToken auth, Model m) {
+    public String indexStudent(OAuth2AuthenticationToken auth, Model model) {
         String login = auth.getPrincipal().getAttribute("login");
         System.out.println(auth);
-        m.addAttribute("name", login);
+        model.addAttribute("name", login);
 
         List<Test> allTests = testService.getTestsForStudents();
-        m.addAttribute("tests", allTests);
+        System.out.println("Alle Tests für Student Dashboard: " + allTests);
+        model.addAttribute("tests", allTests);
 
         return "student/student-dashboard";
     }
@@ -56,7 +57,7 @@ public class StudentController {
      * PathVariable statt RequestParam, weil ids unerlässlich sind
      */
     @GetMapping("test/{testId}/question/{questionId}")
-    public String testSession(@PathVariable int testId, @PathVariable String questionId, Model model) {
+    public String testSession(@PathVariable int testId, @PathVariable int questionId, Model model) {
         Test test = testService.getTestById(testId);
         model.addAttribute("test", test);
 

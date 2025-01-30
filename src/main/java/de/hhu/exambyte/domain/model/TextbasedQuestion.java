@@ -2,7 +2,7 @@ package de.hhu.exambyte.domain.model;
 
 public class TextbasedQuestion implements Question {
     private final String name;
-    private String id;
+    private int id;
     private final QuestionType questionType;
     private boolean correctionStatus;
     private String description; // Speziell für TextbasedQuestions
@@ -20,7 +20,7 @@ public class TextbasedQuestion implements Question {
     }
 
     @Override
-    public String getId() {
+    public int getId() {
         return this.id;
     }
 

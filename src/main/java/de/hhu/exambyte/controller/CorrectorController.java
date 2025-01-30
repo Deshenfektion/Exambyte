@@ -55,7 +55,7 @@ public class CorrectorController {
     }
 
     @GetMapping("test/{testId}/question/{quetionId}")
-    public String viewQuestion(@PathVariable int testId, @PathVariable String questionId, Model model) {
+    public String viewQuestion(@PathVariable int testId, @PathVariable int questionId, Model model) {
         Test test = testService.getTestById(testId);
         Question question = questionService.getQuestionById(questionId);
 

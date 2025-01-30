@@ -14,7 +14,7 @@ import java.util.List;
 public class QuestionEntity {
 
     @Id
-    private String id;
+    private int id;
     private String name;
     private QuestionType questionType;
     private boolean correctionStatus;
@@ -25,7 +25,7 @@ public class QuestionEntity {
     // Speziell für TextbasedQuestion
     private String description;
 
-    public QuestionEntity(String id, String name, QuestionType questionType, boolean correctionStatus,
+    public QuestionEntity(int id, String name, QuestionType questionType, boolean correctionStatus,
             List<String> options, String description) {
         this.id = id;
         this.name = name;
@@ -55,7 +55,7 @@ public class QuestionEntity {
     }
 
     // Getter und Setter
-    public String getId() {
+    public int getId() {
         return id;
     }
 
