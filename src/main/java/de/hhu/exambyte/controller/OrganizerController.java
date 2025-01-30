@@ -53,7 +53,7 @@ public class OrganizerController {
 
     @GetMapping("/test/{id}")
     @Secured("ROLE_ORGANIZER")
-    public String viewTest(@PathVariable String id, Model model) {
+    public String viewTest(@PathVariable int id, Model model) {
         Test test = testService.getTestById(id);
         model.addAttribute("test", test);
         return "test-details";

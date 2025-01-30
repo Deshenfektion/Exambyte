@@ -39,7 +39,7 @@ public class StudentController {
 
     @GetMapping("/test/{testId}/overview")
     @Secured("ROLE_STUDENT")
-    public String testOverview(@PathVariable String testId, Model model) {
+    public String testOverview(@PathVariable int testId, Model model) {
         Test test = testService.getTestById(testId);
         model.addAttribute("test", test);
 
@@ -56,7 +56,7 @@ public class StudentController {
      * PathVariable statt RequestParam, weil ids unerlässlich sind
      */
     @GetMapping("test/{testId}/question/{questionId}")
-    public String testSession(@PathVariable String testId, @PathVariable String questionId, Model model) {
+    public String testSession(@PathVariable int testId, @PathVariable String questionId, Model model) {
         Test test = testService.getTestById(testId);
         model.addAttribute("test", test);
 

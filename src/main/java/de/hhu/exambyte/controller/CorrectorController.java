@@ -39,7 +39,7 @@ public class CorrectorController {
 
     @GetMapping("/test/{id}")
     @Secured("ROLE_CORRECTOR")
-    public String viewTest(@PathVariable String id, Model model) {
+    public String viewTest(@PathVariable int id, Model model) {
         Test test = testService.getTestById(id);
         model.addAttribute("test", test);
 
@@ -55,7 +55,7 @@ public class CorrectorController {
     }
 
     @GetMapping("test/{testId}/question/{quetionId}")
-    public String viewQuestion(@PathVariable String testId, @PathVariable String questionId, Model model) {
+    public String viewQuestion(@PathVariable int testId, @PathVariable String questionId, Model model) {
         Test test = testService.getTestById(testId);
         Question question = questionService.getQuestionById(questionId);
 

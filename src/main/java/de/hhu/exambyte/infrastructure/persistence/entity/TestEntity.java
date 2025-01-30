@@ -13,13 +13,13 @@ import java.util.List;
 public class TestEntity {
 
     @Id
-    private final String id;
+    private final int id;
     private final String name;
     private final List<Question> questions;
     private final Test.TestStatus status;
 
     @PersistenceCreator
-    public TestEntity(String name, String id, List<Question> questions, Test.TestStatus status) {
+    public TestEntity(String name, int id, List<Question> questions, Test.TestStatus status) {
         this.name = name;
         this.id = id;
         this.questions = questions;
@@ -36,7 +36,7 @@ public class TestEntity {
         return name;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 

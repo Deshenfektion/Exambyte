@@ -6,7 +6,7 @@ import java.util.List;
 public class Test {
     private String name;
     // Wird von der Datenbank gesetzt via SERIAL PRIMARY KEY
-    private String id;
+    private int id;
     private List<Question> questions;
     private TestStatus status;
 
@@ -21,7 +21,7 @@ public class Test {
         this.status = status;
     }
 
-    public Test(String name, String id, List<Question> questions, TestStatus status) {
+    public Test(String name, int id, List<Question> questions, TestStatus status) {
         this.name = name;
         this.id = id;
         this.questions = questions;
@@ -32,7 +32,7 @@ public class Test {
         return name;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
