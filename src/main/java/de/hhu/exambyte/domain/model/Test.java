@@ -5,7 +5,6 @@ import java.util.List;
 
 public class Test {
     private String name;
-    // Wird von der Datenbank gesetzt via SERIAL PRIMARY KEY
     private int id;
     private List<Question> questions;
     private TestStatus status;
@@ -53,31 +52,15 @@ public class Test {
     }
 
     public boolean isCompleted() {
-        return (this.status == TestStatus.COMPLETED ? true : false);
+        return (this.status == TestStatus.COMPLETED);
     }
 
     public boolean hasUncorrectedTextbasedQuestions() {
         for (Question question : questions) {
-            return (question.isUncorrectedTextbasedQuestion() ? true : false);
+            if (question.isUncorrectedTextbasedQuestion()) {
+                return true;
+            }
         }
         return false;
     }
-    /*
-     * Was gehört ins Domain Model?
-     * Eigenschaften und Status: Attribute wie name, id, status.
-     * Invariants: Regeln, die immer erfüllt sein müssen, z. B.
-     * "Ein Test muss mindestens eine Frage haben".
-     * Verhaltenslogik: Methoden, die Logik bezogen auf den Zustand des Tests
-     * implementieren.
-     * Zustandsänderungen: Änderungen am Status oder Zustand der Domäne (z. B. Test
-     * starten oder abschließen).
-     */
-
-    /*
-     * Beispiele für Methoden im Domain Model:
-     * activate(): Aktiviert einen Test, wenn er noch inaktiv ist.
-     * complete(): Markiert einen Test als abgeschlossen.
-     * addQuestion(Question question): Fügt eine neue Frage hinzu.
-     * isValid(): Überprüft, ob der Test den Validierungsregeln entspricht.
-     */
 }

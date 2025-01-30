@@ -3,13 +3,12 @@ package de.hhu.exambyte.infrastructure.persistence.entity;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.annotation.Id;
-
 import de.hhu.exambyte.domain.model.Question;
 import de.hhu.exambyte.domain.model.Test;
 
 import java.util.List;
 
-@Table("tests") // Spring Data Annotation für die Zuordnung zur DB-Tabelle
+@Table("test") // Spring Data Annotation für die Zuordnung zur DB-Tabelle
 public class TestEntity {
 
     @Id

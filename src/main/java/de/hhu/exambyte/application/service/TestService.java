@@ -1,6 +1,7 @@
 package de.hhu.exambyte.application.service;
 
 import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.infrastructure.persistence.entity.TestEntity;
 import de.hhu.exambyte.infrastructure.persistence.repository.TestRepository;
 
 import org.springframework.stereotype.Service;
@@ -16,34 +17,22 @@ public class TestService {
         this.testRepository = testRepository;
     }
 
-    /*
-     * Was gehört in den Service?
-     * Orchestrierung von Domain-Objekten: Verwaltung von Tests, z. B. Erstellung
-     * oder Abruf.
-     * Persistenz: Speichern und Abrufen von Tests mithilfe des Repositories.
-     * Externe Abhängigkeiten: Kommunikation mit externen Systemen, z. B.
-     * Notification-Systeme.
-     * Anwendungslogik: Umsetzung von konkreten Use Cases, die die Domänenlogik
-     * verwenden.
-     * Beispiele für Methoden im Service:
-     * createTest(String name): Erstellt einen neuen Test und persistiert ihn.
-     * getAllTests(): Gibt alle Tests aus der Datenbank zurück.
-     * getTestsForStudents(): Filtert Tests für Studenten basierend auf Status.
-     * deleteTest(String id): Löscht einen Test aus der Datenbank.
-     */
-
     public Test createTest(String name, Test.TestStatus status) {
-        Test newTest = new Test(name, status);
-
-        return testRepository.save(newTest);
+        // Erstelle ein TestEntity
+        TestEntity newTestEntity = new TestEntity(name, 0, null, status);
+        // Speichere das Entity und konvertiere es zurück ins Domain-Modell
+        TestEntity savedTestEntity = testRepository.save(newTestEntity);
+        return savedTestEntity.toDomainModel();
     }
 
     public List<Test> getAllTests() {
-        return (List<Test>) testRepository.findAll();
+        // Finde alle Tests und konvertiere sie in das Domain-Modell
+        return (List<Test>) testRepository.findAll().stream()
+                .map(TestEntity::toDomainModel)
+                .collect(Collectors.toList());
     }
 
     public List<Test> getTestsForStudents() {
-        // Tests für Studenten: veröffentlicht + vor Endzeitpunkt
         return getAllTests().stream()
                 .filter(test -> test.getStatus() == Test.TestStatus.ACTIVE
                         || test.getStatus() == Test.TestStatus.IN_PROGRESS)
@@ -51,7 +40,6 @@ public class TestService {
     }
 
     public List<Test> getTestsForOrganizers() {
-        // Tests für Organisatoren: Alle Tests
         return getAllTests();
     }
 
@@ -60,10 +48,11 @@ public class TestService {
                 .filter(test -> test.isCompleted())
                 .filter(test -> test.hasUncorrectedTextbasedQuestions())
                 .collect(Collectors.toList());
-
     }
 
-    public Test getTestById(String id) {
-        return testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found with id: " + id));
+    public Test getTestById(int id) {
+        TestEntity testEntity = testRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Test not found with id: " + id));
+        return testEntity.toDomainModel();
     }
 }
