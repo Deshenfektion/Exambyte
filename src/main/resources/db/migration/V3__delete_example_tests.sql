@@ -1,0 +1,1 @@
+DELETE FROM test WHERE name IN ('Test 1', 'Test 2', 'Test 3');
