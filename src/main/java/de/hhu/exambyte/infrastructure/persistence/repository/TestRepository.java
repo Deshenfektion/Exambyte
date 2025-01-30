@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import de.hhu.exambyte.domain.model.Test;
+import de.hhu.exambyte.infrastructure.persistence.entity.TestEntity;
 
 @Repository
-public interface TestRepository extends CrudRepository<Test, Integer> {
+public interface TestRepository extends CrudRepository<TestEntity, Integer> {
 
-    List<Test> findAll();
+    List<TestEntity> findAll();
 }
