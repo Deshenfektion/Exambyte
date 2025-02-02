@@ -37,7 +37,7 @@ public class StudentController {
                 System.out.println("Alle Tests für Student Dashboard: " + allTests);
                 model.addAttribute("tests", allTests);
 
-                return "student/student-dashboard";
+                return "student/dashboard";
         }
 
         @GetMapping("/test/{testId}/overview")
