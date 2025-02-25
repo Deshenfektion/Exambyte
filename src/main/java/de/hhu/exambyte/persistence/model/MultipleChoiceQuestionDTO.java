@@ -1,4 +1,4 @@
-package de.hhu.exambyte.persistence;
+package de.hhu.exambyte.persistence.model;
 
 import org.springframework.data.relational.core.mapping.Table;
 

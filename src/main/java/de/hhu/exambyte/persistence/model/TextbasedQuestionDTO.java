@@ -1,4 +1,4 @@
-package de.hhu.exambyte.persistence;
+package de.hhu.exambyte.persistence.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
