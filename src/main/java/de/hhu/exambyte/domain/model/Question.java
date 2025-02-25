@@ -1,20 +1,49 @@
 package de.hhu.exambyte.domain.model;
 
-public interface Question {
-    String getName();
+public class Question {
+    private int id;
+    private String name;
+    private String description;
+    private int maxPoints;
+    private int points;
 
-    int getId();
+    public int getId() {
+        return id;
+    }
 
-    int getTestId();
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    QuestionType getQuestionType();
+    public String getName() {
+        return name;
+    }
 
-    boolean getCorrectionStatus();
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    // Wichtig für Korrektoren
-    boolean isUncorrectedTextbasedQuestion();
+    public String getDescription() {
+        return description;
+    }
 
-    enum QuestionType {
-        MULTIPLE_CHOICE, TEXT_BASED
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getMaxPoints() {
+        return maxPoints;
+    }
+
+    public void setMaxPoints(int maxPoints) {
+        this.maxPoints = maxPoints;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
     }
 }

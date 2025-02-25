@@ -1,53 +1,6 @@
 package de.hhu.exambyte.domain.model;
 
-import java.util.List;
-
-public class MultipleChoiceQuestion implements Question {
-    private final String name;
-    private int id;
-    private final QuestionType questionType;
-    private boolean correctionStatus;
-    private List<String> options; // Speziell für MultipleChoiceQuestion
-    private int testId;
-
-    public MultipleChoiceQuestion(String name, List<String> options) {
-        this.name = name;
-        this.questionType = QuestionType.MULTIPLE_CHOICE;
-        this.correctionStatus = false;
-        this.options = options;
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public int getId() {
-        return this.id;
-    }
-
-    @Override
-    public QuestionType getQuestionType() {
-        return this.questionType;
-    }
-
-    @Override
-    public boolean getCorrectionStatus() {
-        return this.correctionStatus;
-    }
-
-    @Override
-    public boolean isUncorrectedTextbasedQuestion() {
-        return false;
-    }
-
-    @Override
-    public int getTestId() {
-        return this.testId;
-    }
-
-    public List<String> getOptions() {
-        return this.options;
-    }
+public class MultipleChoiceQuestion extends Question {
+    private String correctAnswer;
+    private String explanation;
 }
