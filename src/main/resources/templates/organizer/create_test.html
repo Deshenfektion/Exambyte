@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Neuen Test erstellen</title>
+    <!-- Füge hier ggf. CSS (z.B. Bootstrap) hinzu -->
+  </head>
+  <body>
+    <h1>Neuen Test erstellen</h1>
+
+    <!-- Anzeige von Erfolgs-/Fehlermeldungen -->
+    <div
+      th:if="${successMessage}"
+      style="color: green"
+      th:text="${successMessage}"
+    ></div>
+    <div
+      th:if="${errorMessage}"
+      style="color: red"
+      th:text="${errorMessage}"
+    ></div>
+
+    <form method="post" th:action="@{/organizer/tests}">
+      <!-- CSRF Token -->
+      <input
+        type="hidden"
+        th:name="${_csrf.parameterName}"
+        th:value="${_csrf.token}"
+      />
+
+      <div>
+        <label for="title">Testtitel:</label><br />
+        <input type="text" id="title" name="title" required size="50" />
+      </div>
+      <br />
+      <div>
+        <label for="startTime">Startzeit:</label><br />
+        <input type="datetime-local" id="startTime" name="startTime" required />
+      </div>
+      <br />
+      <div>
+        <label for="endTime">Endzeit:</label><br />
+        <input type="datetime-local" id="endTime" name="endTime" required />
+      </div>
+      <br />
+      <div>
+        <label for="publishTime">Ergebnisveröffentlichung:</label><br />
+        <input
+          type="datetime-local"
+          id="publishTime"
+          name="publishTime"
+          required
+        />
+      </div>
+      <hr />
+
+      <h2>Frage hinzufügen (Nur Freitext aktuell)</h2>
+      <div>
+        <label for="questionText">Fragentext (HTML erlaubt):</label><br />
+        <textarea
+          id="questionText"
+          name="questionText"
+          rows="4"
+          cols="80"
+          required
+        ></textarea>
+      </div>
+      <br />
+      <div>
+        <label for="maxPoints">Maximale Punkte:</label><br />
+        <input
+          type="number"
+          id="maxPoints"
+          name="maxPoints"
+          step="0.5"
+          min="0.5"
+          required
+        />
+      </div>
+      <br />
+
+      <!-- Später hier Mechanismus zum Hinzufügen weiterer Fragen -->
+
+      <button type="submit">Test erstellen</button>
+    </form>
+
+    <hr />
+    <a th:href="@{/organizer/dashboard}">Zurück zum Organizer Dashboard</a>
+  </body>
+</html>
