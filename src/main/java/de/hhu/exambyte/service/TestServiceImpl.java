@@ -1,23 +1,29 @@
-package de.hhu.exambyte.service;
+package de.hhu.exambyte.service; // Dein Paketname
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Wichtig für Operationen über mehrere Tabellen
+import org.springframework.transaction.annotation.Transactional;
 
+// Deine Domain-Modell-Importe (passe ggf. an)
+import de.hhu.exambyte.domain.model.AnswerOption; // Annahme für AnswerOption
 import de.hhu.exambyte.domain.model.Question;
 import de.hhu.exambyte.domain.model.Submission;
 import de.hhu.exambyte.domain.model.Test;
+// Deine Repository-Importe (passe ggf. an)
 import de.hhu.exambyte.repository.SubmissionRepository;
 import de.hhu.exambyte.repository.TestRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collections; // Für leeres Set
 import java.util.List;
 import java.util.Optional;
+import java.util.Set; // Für Set von IDs/Refs
+import java.util.stream.Collectors; // Für Stream-Operationen
 
 @Service
-public class TestServiceImpl implements TestService {
+public class TestServiceImpl implements TestService { // Stelle sicher, dass dein Interface auch angepasst wurde
 
     private static final Logger log = LoggerFactory.getLogger(TestServiceImpl.class);
 
@@ -39,43 +45,35 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
+    @Transactional(readOnly = true) // Nur lesen
     public Optional<Test> findTestForPreview(long testId) {
         log.debug("Finding test for preview: {}", testId);
         return testRepository.findById(testId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Test> findTestForStudent(long testId, String studentGithubId) {
         log.debug("Finding test {} for student {}", testId, studentGithubId);
         Optional<Test> testOpt = testRepository.findById(testId);
 
-        // TODO: Zeitliche Einschränkung hinzufügen
-        // Aktuell wird der Test einfach zurückgegeben, wenn er existiert.
-        // Später: Prüfen, ob LocalDateTime.now() >= test.startTime()
-        // (oder >= test.publishTime() für Ergebnisse)
-
-        // if (testOpt.isPresent()) {
-        // Test test = testOpt.get();
-        // LocalDateTime now = LocalDateTime.now();
-        // if (now.isBefore(test.startTime())) {
-        // log.warn("Test {} not yet started for student {}", testId, studentGithubId);
-        // return Optional.empty(); // Test hat noch nicht begonnen
-        // }
-        // }
+        // TODO: Zeitliche Einschränkung hinzufügen (Prüfen ob now >= startTime)
+        // Siehe vorherige Vorschläge
 
         return testOpt;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Test> getTestsForStudent(String studentGithubId) {
         log.debug("Getting all tests for student {}", studentGithubId);
         // TODO: Implement logic to filter tests relevant for the student
         // Simplistic approach: return all tests for now
-        return (List<Test>) testRepository.findAll(); // ACHTUNG: Sehr ineffizient bei vielen Tests!
-                                                      // Später spezifischere Query nötig.
+        return (List<Test>) testRepository.findAll(); // ACHTUNG: Ineffizient!
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean isTestActive(long testId) {
         Optional<Test> testOpt = testRepository.findById(testId);
         if (testOpt.isPresent()) {
@@ -87,14 +85,30 @@ public class TestServiceImpl implements TestService {
             return isActive;
         }
         log.warn("isTestActive check failed: Test {} not found", testId);
-        return false; // Test nicht gefunden, also nicht aktiv
+        return false;
     }
 
+    /**
+     * Speichert oder aktualisiert die Einreichung eines Studierenden für eine
+     * Frage.
+     * Kann entweder Freitext ODER eine Auswahl von MC-Optionen speichern.
+     *
+     * @param testId            Die ID des Tests.
+     * @param questionId        Die ID der Frage.
+     * @param studentGithubId   Die ID des Studierenden.
+     * @param submittedText     Der eingereichte Freitext (null für MC).
+     * @param selectedOptionIds Ein Set der IDs der ausgewählten Antwortoptionen
+     *                          (null oder leer für Freitext).
+     * @return Die gespeicherte oder aktualisierte Submission.
+     * @throws IllegalStateException wenn der Test nicht aktiv ist.
+     */
     @Override
     @Transactional // Wichtig, da wir lesen (Optional<Submission>) und dann schreiben (save)
     public Submission saveOrUpdateSubmission(long testId, long questionId, String studentGithubId,
-            String submittedText /* , Set<Long> selectedOptionIds */) {
-        log.debug("Saving submission for test {}, question {}, student {}", testId, questionId, studentGithubId);
+            String submittedText, Set<Long> selectedOptionIds) { // Signatur geändert!
+
+        log.debug("Saving submission for test {}, question {}, student {}: Text='{}', Options={}",
+                testId, questionId, studentGithubId, submittedText, selectedOptionIds);
 
         // 1. Prüfen, ob der Test überhaupt aktiv ist
         if (!isTestActive(testId)) {
@@ -102,7 +116,7 @@ public class TestServiceImpl implements TestService {
             throw new IllegalStateException("Der Test ist derzeit nicht bearbeitbar.");
         }
 
-        // 2. AggregateReferences erstellen (sicherer Weg, um auf die IDs zu verweisen)
+        // 2. AggregateReferences erstellen
         AggregateReference<Test, Long> testRef = AggregateReference.to(testId);
         AggregateReference<Question, Long> questionRef = AggregateReference.to(questionId);
 
@@ -110,44 +124,61 @@ public class TestServiceImpl implements TestService {
         Optional<Submission> existingSubmissionOpt = submissionRepository.findByTestIdAndQuestionIdAndStudentGithubId(
                 testRef, questionRef, studentGithubId);
 
+        // 4. Konvertiere die übergebenen Option-IDs in AggregateReferences
+        // (Nur relevant für MC-Fragen)
+        final Set<AggregateReference<AnswerOption, Long>> selectedOptionRefs;
+        if (selectedOptionIds != null && !selectedOptionIds.isEmpty()) {
+            selectedOptionRefs = selectedOptionIds.stream()
+                    .map(AggregateReference::<AnswerOption, Long>to)
+                    .collect(Collectors.toSet());
+        } else {
+            selectedOptionRefs = Collections.emptySet(); // Leeres Set, falls null oder leer übergeben wird
+        }
+
         Submission submissionToSave;
         if (existingSubmissionOpt.isPresent()) {
-            // 4a. Vorhandene Submission aktualisieren (neues Record-Objekt erstellen)
+            // 4a. Vorhandene Submission aktualisieren
             Submission existing = existingSubmissionOpt.get();
-            submissionToSave = new Submission(
-                    existing.id(), // Wichtig: ID beibehalten!
-                    existing.testId(),
-                    existing.questionId(),
-                    existing.studentGithubId(),
-                    submittedText, // Aktualisierter Text
-                    // TODO: MC-Antworten aktualisieren
-                    existing.score(), // Bewertung bleibt unverändert beim Speichern durch Studenten
-                    existing.feedback());
-            log.trace("Updating existing submission {}", existing.id());
+            log.trace("Found existing submission with ID: {}", existing.id());
+
+            // Entscheide, ob Freitext oder MC aktualisiert wird
+            // Annahme: Entweder submittedText ODER selectedOptionIds ist relevant
+            if (submittedText != null) { // Es ist ein Freitext-Update
+                submissionToSave = existing.updateFreeText(submittedText);
+                log.trace("Updating existing freetext submission {}", existing.id());
+            } else { // Es ist ein MC-Update (auch wenn selectedOptionRefs leer ist -> Auswahl
+                     // entfernt)
+                submissionToSave = existing.updateSelectedOptions(selectedOptionRefs);
+                log.trace("Updating existing MC submission {} with options {}", existing.id(), selectedOptionIds);
+            }
         } else {
             // 4b. Neue Submission erstellen
-            submissionToSave = new Submission(
-                    null, // ID wird von DB generiert
-                    testRef,
-                    questionRef,
-                    studentGithubId,
-                    submittedText,
-                    // TODO: MC-Antworten setzen
-                    null, // Keine Bewertung initial
-                    null // Kein Feedback initial
-            );
-            log.trace("Creating new submission for test {}, question {}, student {}", testId, questionId,
-                    studentGithubId);
+            log.trace("No existing submission found for test {}, question {}, student {}. Creating new one.", testId,
+                    questionId, studentGithubId);
+            // Entscheide, ob Freitext oder MC erstellt wird
+            if (submittedText != null) { // Neue Freitext-Submission
+                submissionToSave = new Submission(testRef, questionRef, studentGithubId, submittedText);
+                log.trace("Creating new freetext submission.");
+            } else { // Neue MC-Submission
+                submissionToSave = new Submission(testRef, questionRef, studentGithubId, selectedOptionRefs);
+                log.trace("Creating new MC submission with options {}.", selectedOptionIds);
+            }
         }
 
         // 5. Speichern (entweder INSERT oder UPDATE, basierend auf vorhandener ID)
-        return submissionRepository.save(submissionToSave);
+        log.debug("Saving submission: {}", submissionToSave);
+        Submission savedSubmission = submissionRepository.save(submissionToSave);
+        log.info("Successfully saved submission with ID: {}", savedSubmission.id());
+        return savedSubmission;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Submission> getSubmissionsForStudentTest(long testId, String studentGithubId) {
         log.debug("Getting submissions for student {} in test {}", studentGithubId, testId);
         AggregateReference<Test, Long> testRef = AggregateReference.to(testId);
+        // Diese Methode lädt jetzt dank @MappedCollection automatisch
+        // auch die 'selectedOptions' für jede Submission mit.
         return submissionRepository.findByTestIdAndStudentGithubId(testRef, studentGithubId);
     }
 }
