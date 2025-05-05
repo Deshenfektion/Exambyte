@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Einreichung bewerten</title>
+    <!-- CSS etc. -->
+  </head>
+  <body>
+    <h1>Einreichung bewerten</h1>
+    <p>Korrektor: <span th:text="${username}">Korrektor</span></p>
+
+    <!-- Anzeige von Fehlermeldungen vom Redirect -->
+    <div
+      th:if="${errorMessage}"
+      style="
+        color: red;
+        border: 1px solid red;
+        padding: 10px;
+        margin-bottom: 15px;
+      "
+    >
+      <strong th:text="${errorMessage}">Fehlermeldung!</strong>
+    </div>
+
+    <hr />
+    <h2>
+      Frage (<span th:text="${submissionDto.maxPoints}">P</span> Punkte max.)
+    </h2>
+    <div
+      style="
+        background-color: #eee;
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+      "
+    >
+      <div th:utext="${submissionDto.questionText}">Fragentext...</div>
+    </div>
+
+    <h2>
+      Antwort von
+      <span th:text="${submissionDto.studentGithubId}">Student</span>
+    </h2>
+    <div
+      style="
+        background-color: #f8f8ff;
+        padding: 10px;
+        border: 1px solid #add8e6;
+        margin-bottom: 15px;
+        white-space: pre-wrap;
+      "
+    >
+      <span th:text="${submissionDto.submittedText}">Antworttext...</span>
+      <i
+        th:if="${submissionDto.submittedText == null or #strings.isEmpty(submissionDto.submittedText)}"
+        >(Keine Antwort abgegeben)</i
+      >
+    </div>
+    <hr />
+
+    <h2>Bewertung</h2>
+    <form
+      method="post"
+      th:action="@{/corrector/submissions/{id}(id=${submissionDto.submissionId})}"
+    >
+      <!-- CSRF Token -->
+      <input
+        type="hidden"
+        th:name="${_csrf.parameterName}"
+        th:value="${_csrf.token}"
+      />
+
+      <div>
+        <label th:for="'score_' + ${submissionDto.submissionId}">Punkte:</label
+        ><br />
+        <input
+          type="number"
+          th:id="'score_' + ${submissionDto.submissionId}"
+          name="score"
+          th:value="${submittedScore != null ? submittedScore : ''}"
+          th:attr="max=${submissionDto.maxPoints}"
+          min="0"
+          step="0.5"
+          required
+        />
+        / <span th:text="${submissionDto.maxPoints}">maxP</span> Punkte
+        <small
+          th:if="${errorMessage != null and errorMessage.contains('Punktzahl')}"
+          style="color: red"
+        >
+          (Ungültig!)</small
+        >
+      </div>
+      <br />
+      <div>
+        <label th:for="'feedback_' + ${submissionDto.submissionId}"
+          >Feedback:</label
+        ><br />
+        <textarea
+          th:id="'feedback_' + ${submissionDto.submissionId}"
+          name="feedback"
+          rows="5"
+          cols="80"
+          th:text="${submittedFeedback != null ? submittedFeedback : ''}"
+        ></textarea>
+        <small
+          th:if="${errorMessage != null and errorMessage.contains('Feedback')}"
+          style="color: red"
+        >
+          (Feedback erforderlich!)</small
+        >
+        <br /><small
+          >(Wird dem Studierenden angezeigt. HTML wird *nicht*
+          interpretiert.)</small
+        >
+      </div>
+      <br />
+      <button type="submit">Bewertung speichern</button>
+      <a th:href="@{/corrector/dashboard}" style="margin-left: 15px"
+        >Abbrechen</a
+      >
+    </form>
+  </body>
+</html>
