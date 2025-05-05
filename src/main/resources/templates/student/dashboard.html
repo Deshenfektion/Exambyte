@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Studenten Dashboard</title>
+    <!-- CSS etc. -->
+  </head>
+  <body>
+    <h1>Willkommen, <span th:text="${username}">Student</span>!</h1>
+
+    <!-- Anzeige von Erfolgs-/Fehlermeldungen von Redirects -->
+    <div
+      th:if="${successMessage}"
+      style="color: green"
+      th:text="${successMessage}"
+    ></div>
+    <div
+      th:if="${errorMessage}"
+      style="color: red"
+      th:text="${errorMessage}"
+    ></div>
+
+    <h2>Verfügbare Tests</h2>
+
+    <div th:if="${tests.isEmpty()}">
+      <p>Aktuell sind keine Tests verfügbar.</p>
+    </div>
+
+    <table th:unless="${tests.isEmpty()}" border="1">
+      <thead>
+        <tr>
+          <th>Titel</th>
+          <th>Startzeit</th>
+          <th>Endzeit</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="test : ${tests}">
+          <td th:text="${test.title}">Test Titel</td>
+          <td
+            th:text="${#temporals.format(test.startTime, 'dd.MM.yyyy HH:mm')}"
+          >
+            Start
+          </td>
+          <td th:text="${#temporals.format(test.endTime, 'dd.MM.yyyy HH:mm')}">
+            Ende
+          </td>
+          <td>
+            <!-- Link zur Testansicht -->
+            <a th:href="@{/student/tests/{id}(id=${test.id})}"
+              >Anzeigen / Bearbeiten</a
+            >
+            <!-- Später: Link zu Ergebnissen -->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr />
+    <!-- Logout Link (falls noch nicht woanders) -->
+    <form th:action="@{/logout}" method="post">
+      <input
+        type="hidden"
+        th:name="${_csrf.parameterName}"
+        th:value="${_csrf.token}"
+      />
+      <button type="submit">Logout</button>
+    </form>
+  </body>
+</html>

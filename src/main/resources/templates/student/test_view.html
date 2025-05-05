@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title th:text="'Test: ' + ${test.title}">Test Ansicht</title>
+    <!-- CSS etc. -->
+  </head>
+  <body>
+    <h1 th:text="${test.title}">Test Titel</h1>
+    <p>
+      Start:
+      <span th:text="${#temporals.format(test.startTime, 'dd.MM.yyyy HH:mm')}"
+        >Startzeit</span
+      >
+      | Ende:
+      <span th:text="${#temporals.format(test.endTime, 'dd.MM.yyyy HH:mm')}"
+        >Endzeit</span
+      >
+    </p>
+
+    <div
+      th:if="${isReadOnly}"
+      style="
+        color: orange;
+        border: 1px solid orange;
+        padding: 10px;
+        margin-bottom: 15px;
+      "
+    >
+      Dieser Test ist nicht mehr bearbeitbar (Endzeitpunkt erreicht oder noch
+      nicht gestartet).
+    </div>
+
+    <!-- Anzeige von Erfolgs-/Fehlermeldungen von Redirects -->
+    <div
+      th:if="${successMessage}"
+      style="color: green"
+      th:text="${successMessage}"
+    ></div>
+    <div
+      th:if="${errorMessage}"
+      style="color: red"
+      th:text="${errorMessage}"
+    ></div>
+
+    <!-- Das Formular umschließt alle Fragen und sendet an den Submit-Endpunkt -->
+    <form
+      method="post"
+      th:action="@{/student/tests/{id}/submit(id=${test.id})}"
+    >
+      <!-- CSRF Token -->
+      <input
+        type="hidden"
+        th:name="${_csrf.parameterName}"
+        th:value="${_csrf.token}"
+      />
+
+      <!-- Iteriere durch die Fragen des Tests -->
+      <div
+        th:each="question, iterStat : ${test.questions}"
+        style="margin-bottom: 20px; border: 1px solid #ccc; padding: 15px"
+      >
+        <h3>
+          Frage <span th:text="${iterStat.count}">1</span> (<span
+            th:text="${question.maxPoints}"
+            >P</span
+          >
+          Punkte)
+        </h3>
+        <!-- Frage anzeigen (erlaube HTML) -->
+        <div th:utext="${question.questionText}">Fragentext...</div>
+        <br />
+
+        <!-- Antwortfeld basierend auf Fragentyp -->
+        <div th:switch="${question.type}">
+          <!-- Fall: Freitextfrage -->
+          <div
+            th:case="${T(de.hhu.exambyte.domain.model.QuestionType).FREETEXT}"
+          >
+            <label th:for="'q_' + ${question.id}">Deine Antwort:</label><br />
+            <textarea
+              th:id="'q_' + ${question.id}"
+              rows="5"
+              cols="80"
+              th:name="'answers[' + ${question.id} + ']'"
+              th:text="${submittedAnswers.get(question.id)}"
+              th:disabled="${isReadOnly}"
+            >
+            </textarea>
+          </div>
+
+          <!-- Fall: Multiple Choice (Platzhalter für später) -->
+          <div th:case="${T(de.hhu.exambyte.domain.model.QuestionType).MC}">
+            <p><i>(Multiple Choice wird noch nicht unterstützt)</i></p>
+            <!-- Hier kämen Radiobuttons/Checkboxes für question.options hin -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Senden-Button (nur aktiv, wenn Test bearbeitbar) -->
+      <button type="submit" th:disabled="${isReadOnly}">
+        Antworten speichern
+      </button>
+    </form>
+
+    <hr />
+    <a th:href="@{/student/dashboard}">Zurück zum Dashboard</a>
+  </body>
+</html>
