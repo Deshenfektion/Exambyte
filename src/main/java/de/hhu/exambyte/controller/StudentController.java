@@ -149,8 +149,7 @@ public class StudentController {
 
                         log.debug("Processing answer for question {}: '{}'", questionId, submittedText);
                         // Speichere die Antwort über den Service
-                        testService.saveOrUpdateSubmission(testId, questionId, studentId, submittedText);
-
+                        testService.saveOrUpdateSubmission(testId, questionId, studentId, submittedText, null);
                     } catch (NumberFormatException e) {
                         log.warn("Could not parse question ID from parameter name: {}", paramName);
                         // Ignoriere diesen Parameter oder logge einen Fehler
