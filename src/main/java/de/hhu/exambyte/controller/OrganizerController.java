@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes; // Für Flash Messages
 
+import de.hhu.exambyte.domain.model.AnswerOption;
 import de.hhu.exambyte.domain.model.Question;
 import de.hhu.exambyte.domain.model.QuestionType;
 import de.hhu.exambyte.domain.model.Test;
@@ -66,39 +67,57 @@ public class OrganizerController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime publishTime,
             // Parameter für die (erste) Frage
-            @RequestParam String questionText,
-            @RequestParam double maxPoints,
+            @RequestParam String ft_questionText,
+            @RequestParam double ft_maxPoints,
             // @RequestParam String solutionProposal, // Vorerst weggelassen
+            @RequestParam String mc_questionText,
+            @RequestParam double mc_maxPoints,
+            // 4 MC Antwort Optionen (einfachheitshalber)
+            @RequestParam String mc_option1_text,
+            @RequestParam(required = false) boolean mc_option1_correct, // Checkbox sendet nur 'on' wenn checked, oder
+                                                                        // gar nichts
+            @RequestParam String mc_option2_text,
+            @RequestParam(required = false) boolean mc_option2_correct,
+            @RequestParam String mc_option3_text,
+            @RequestParam(required = false) boolean mc_option3_correct,
+            @RequestParam String mc_option4_text,
+            @RequestParam(required = false) boolean mc_option4_correct,
             RedirectAttributes redirectAttributes // Um Erfolgs-/Fehlermeldungen anzuzeigen
     ) {
         log.info("Handling create test submission for title: {}", title);
 
         try {
-            // 1. Frage(n) erstellen (hier nur eine)
+            Set<Question> questions = new HashSet<>();
+
+            // 1. Freitextfrage erstellen (wie bisher)
             Question freetextQuestion = new Question(
-                    questionText,
-                    maxPoints,
-                    QuestionType.FREETEXT,
-                    null, // solutionProposal vorerst null
-                    new HashSet<>() // Leeres Set für AnswerOptions bei Freitext
-            );
+                    ft_questionText, ft_maxPoints, QuestionType.FREETEXT, null, new HashSet<>());
+            questions.add(freetextQuestion);
 
-            // 2. Test-Objekt erstellen
+            // 2. MC-Frage und Optionen erstellen
+            Set<AnswerOption> mcOptions = new HashSet<>();
+            mcOptions.add(new AnswerOption(mc_option1_text, mc_option1_correct));
+            mcOptions.add(new AnswerOption(mc_option2_text, mc_option2_correct));
+            mcOptions.add(new AnswerOption(mc_option3_text, mc_option3_correct));
+            mcOptions.add(new AnswerOption(mc_option4_text, mc_option4_correct));
+
+            Question mcQuestion = new Question(
+                    mc_questionText, mc_maxPoints, QuestionType.MC, null, // Kein Lösungsvorschlag für MC hier
+                    mcOptions // Die erstellten Optionen
+            );
+            questions.add(mcQuestion);
+
+            // 3. Test-Objekt erstellen mit beiden Fragen
             Test testToCreate = new Test(
-                    title,
-                    startTime,
-                    endTime,
-                    publishTime,
-                    Set.of(freetextQuestion) // Set mit der einen erstellten Frage
-            );
+                    title, startTime, endTime, publishTime, questions);
 
-            // 3. Test über den Service speichern
+            // 4. Test über den Service speichern
             Test createdTest = testService.createTest(testToCreate);
             log.info("Successfully created test with ID: {}", createdTest.id());
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Test '" + createdTest.title() + "' erfolgreich erstellt!");
-            return "redirect:/organizer/dashboard"; // Oder zur Testübersicht
+            return "redirect:/organizer/dashboard";
 
         } catch (Exception e) {
             log.error("Error creating test: {}", e.getMessage(), e);
