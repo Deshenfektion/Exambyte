@@ -22,8 +22,9 @@ public class SecurityConfiguration {
                                 .oauth2Login(config -> config.userInfoEndpoint(
                                                 info -> info.userService(new AppUserService()) // Benutzer-Dienst
                                 )
-                                                .defaultSuccessUrl("/student", true) // Weiterleitung nach erfolgreichem
-                                                                                     // Login
+                                                .defaultSuccessUrl("/student/dashboard", true) // Weiterleitung nach
+                                                                                               // erfolgreichem
+                                                // Login
                                                 .failureUrl("/login?error=true") // Weiterleitung bei Fehler
                                 );
                 return http.build();
