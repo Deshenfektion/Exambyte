@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import de.hhu.exambyte.domain.model.AnswerOption; // Annahme für AnswerOption
 import de.hhu.exambyte.domain.model.Question;
 import de.hhu.exambyte.domain.model.Submission;
+import de.hhu.exambyte.domain.model.SubmissionSelectedOptionRef;
 import de.hhu.exambyte.domain.model.Test;
 // Deine Repository-Importe (passe ggf. an)
 import de.hhu.exambyte.repository.SubmissionRepository;
@@ -116,55 +117,45 @@ public class TestServiceImpl implements TestService { // Stelle sicher, dass dei
             throw new IllegalStateException("Der Test ist derzeit nicht bearbeitbar.");
         }
 
-        // 2. Versuchen, eine vorhandene Submission zu finden
+        // 2. Existierende Submission finden (verwendet jetzt @Query und Long IDs)
         Optional<Submission> existingSubmissionOpt = submissionRepository.findByTestIdAndQuestionIdAndStudentGithubId(
                 testId, questionId, studentGithubId);
 
-        // 3. Konvertiere die übergebenen Option-IDs in AggregateReferences
-        // (Nur relevant für MC-Fragen, WENN eine neue Submission erstellt wird oder
-        // eine MC-Submission aktualisiert)
-        final Set<AggregateReference<AnswerOption, Long>> selectedOptionRefs;
-        if (selectedOptionIds != null && !selectedOptionIds.isEmpty()) {
-            selectedOptionRefs = selectedOptionIds.stream()
-                    .map(AggregateReference::<AnswerOption, Long>to)
-                    .collect(Collectors.toSet());
-        } else {
-            selectedOptionRefs = Collections.emptySet();
-        }
+        // 3. Konvertiere die Long IDs in das neue Referenzformat NUR für MC
+        final Set<SubmissionSelectedOptionRef> selectedOptionRefs = Submission.longsToRefs(selectedOptionIds); // Verwende
+                                                                                                               // Hilfsmethode
 
         Submission submissionToSave;
         if (existingSubmissionOpt.isPresent()) {
-            // 3a. Vorhandene Submission aktualisieren
+            // 4a. Aktualisieren
             Submission existing = existingSubmissionOpt.get();
             log.trace("Found existing submission with ID: {}", existing.id());
 
             if (submittedText != null) {
-                submissionToSave = existing.updateFreeText(submittedText);
+                submissionToSave = existing.updateFreeText(submittedText); // Diese Methode löscht jetzt intern MC-Refs
                 log.trace("Updating existing freetext submission {}", existing.id());
             } else { // MC-Update
-                submissionToSave = existing.updateSelectedOptions(selectedOptionRefs); // Hier werden die Refs verwendet
+                submissionToSave = existing.updateSelectedOptions(selectedOptionRefs); // Diese Methode setzt jetzt Text
+                                                                                       // auf null
                 log.trace("Updating existing MC submission {} with options {}", existing.id(), selectedOptionIds);
             }
         } else {
-            // 3b. Neue Submission erstellen
-            // Für die Erstellung der neuen Submission brauchen wir die AggregateReferences
-            // für Test und Question
+            // 4b. Neu erstellen
             AggregateReference<Test, Long> testRefForNew = AggregateReference.to(testId);
             AggregateReference<Question, Long> questionRefForNew = AggregateReference.to(questionId);
+            log.trace("No existing submission found... Creating new one.");
 
-            log.trace("No existing submission found for test {}, question {}, student {}. Creating new one.", testId,
-                    questionId, studentGithubId);
             if (submittedText != null) {
                 submissionToSave = new Submission(testRefForNew, questionRefForNew, studentGithubId, submittedText);
                 log.trace("Creating new freetext submission.");
             } else { // Neue MC-Submission
                 submissionToSave = new Submission(testRefForNew, questionRefForNew, studentGithubId,
-                        selectedOptionRefs); // Hier werden die Refs verwendet
+                        selectedOptionRefs); // Übergibt die Refs
                 log.trace("Creating new MC submission with options {}.", selectedOptionIds);
             }
         }
 
-        // 4. Speichern
+        // 5. Speichern
         log.debug("Saving submission: {}", submissionToSave);
         Submission savedSubmission = submissionRepository.save(submissionToSave);
         log.info("Successfully saved submission with ID: {}", savedSubmission.id());

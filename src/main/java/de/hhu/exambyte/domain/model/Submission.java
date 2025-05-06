@@ -5,14 +5,10 @@ import org.springframework.data.jdbc.core.mapping.AggregateReference;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.Collections; // Import für leeres Set
-import java.util.Set; // Import für Set
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors; // Importieren
 
-/**
- * Repräsentiert die Einreichung eines Studierenden für eine einzelne Frage
- * eines Tests.
- * Behandelt als eigener Aggregate Root.
- */
 @Table("submissions")
 public record Submission(
         @Id Long id,
@@ -21,45 +17,57 @@ public record Submission(
         String studentGithubId,
         String submittedText, // Für Freitext
 
-        // NEU: Set von Referenzen auf ausgewählte Antwortoptionen (für MC)
-        // Bezieht sich auf die Zwischentabelle 'submission_selected_options'.
-        // 'submission_id' ist die Spalte in der Zwischentabelle, die auf diese
-        // Submission verweist.
-        // 'answer_option_id' ist die Spalte in der Zwischentabelle, die auf die
-        // AnswerOption verweist.
-        @MappedCollection(idColumn = "submission_id", keyColumn = "answer_option_id") Set<AggregateReference<AnswerOption, Long>> selectedOptions,
+        // *** GEÄNDERT: Typ des Sets und keyColumn ***
+        // idColumn verweist auf die Spalte in der Zwischentabelle, die UNSERE ID
+        // enthält (submission_id).
+        // keyColumn verweist auf die Spalte in der Zwischentabelle, die die ID der
+        // ANDEREN Seite enthält (answer_option_id).
+        @MappedCollection(idColumn = "submission_id", keyColumn = "answer_option_id") Set<SubmissionSelectedOptionRef> selectedOptions, // <--
+                                                                                                                                        // Typ
+                                                                                                                                        // geändert!
 
         Double score,
         String feedback) {
-    // Konstruktor für neue, unbewertete Freitext-Einreichungen
+
+    // Konstruktor für Freitext bleibt (selectedOptions wird leer sein)
     public Submission(AggregateReference<Test, Long> testId, AggregateReference<Question, Long> questionId,
             String studentGithubId, String submittedText) {
         this(null, testId, questionId, studentGithubId, submittedText, Collections.emptySet(), null, null);
     }
 
-    // Konstruktor für neue, unbewertete MC-Einreichungen
+    // Konstruktor für MC anpassen
     public Submission(AggregateReference<Test, Long> testId, AggregateReference<Question, Long> questionId,
-            String studentGithubId, Set<AggregateReference<AnswerOption, Long>> selectedOptions) {
-        this(null, testId, questionId, studentGithubId, null, selectedOptions, null, null);
+            String studentGithubId, Set<SubmissionSelectedOptionRef> selectedOptionsRefs) {
+        this(null, testId, questionId, studentGithubId, null,
+                selectedOptionsRefs != null ? selectedOptionsRefs : Collections.emptySet(), null, null);
     }
 
     // Methode zum Erstellen einer bewerteten Kopie
     public Submission withGrade(double score, String feedback) {
-        // Behält die ursprünglichen Antworten (Text ODER Optionen) bei
         return new Submission(this.id, this.testId, this.questionId, this.studentGithubId, this.submittedText,
                 this.selectedOptions, score, feedback);
     }
 
-    // Methode zum Aktualisieren der Antworten (z.B. wenn Student erneut speichert)
-    // Für Freitext:
+    // Update-Methoden anpassen
     public Submission updateFreeText(String newText) {
+        // Wenn Freitext aktualisiert wird, sollten MC-Optionen gelöscht werden?
+        // Hier wird angenommen, dass sie beibehalten werden (falls gemischt möglich
+        // wäre).
+        // Sicherer wäre es evtl., hier Collections.emptySet() zu übergeben.
         return new Submission(this.id, this.testId, this.questionId, this.studentGithubId, newText,
-                this.selectedOptions, this.score, this.feedback);
+                Collections.emptySet(), this.score, this.feedback); // Setze MC-Optionen zurück bei Freitext-Update
     }
 
-    // Für MC:
-    public Submission updateSelectedOptions(Set<AggregateReference<AnswerOption, Long>> newOptions) {
-        return new Submission(this.id, this.testId, this.questionId, this.studentGithubId, this.submittedText,
-                newOptions, this.score, this.feedback);
+    public Submission updateSelectedOptions(Set<SubmissionSelectedOptionRef> newOptions) {
+        // Wenn MC aktualisiert wird, sollte Freitext gelöscht werden?
+        return new Submission(this.id, this.testId, this.questionId, this.studentGithubId, null, // Setze Text auf null
+                newOptions != null ? newOptions : Collections.emptySet(), this.score, this.feedback);
+    }
+
+    // Statische Hilfsmethode zur Konvertierung (kann auch im Service stehen)
+    public static Set<SubmissionSelectedOptionRef> longsToRefs(Set<Long> optionIds) {
+        if (optionIds == null)
+            return Collections.emptySet();
+        return optionIds.stream().map(SubmissionSelectedOptionRef::new).collect(Collectors.toSet());
     }
 }

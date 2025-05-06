@@ -12,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.data.jdbc.core.mapping.AggregateReference; // Importieren
 
 import de.hhu.exambyte.domain.model.Submission;
+import de.hhu.exambyte.domain.model.SubmissionSelectedOptionRef;
 import de.hhu.exambyte.domain.model.Test;
 import de.hhu.exambyte.service.TestService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -98,33 +99,31 @@ public class StudentController {
         // Lade bereits vorhandene Einreichungen für diesen Test und Studenten
         List<Submission> submissionsList = testService.getSubmissionsForStudentTest(testId, studentId);
 
-        // --- NEU: Maps für beide Antworttypen erstellen ---
         Map<Long, String> submittedFreetextAnswers = new HashMap<>();
-        Map<Long, Set<Long>> selectedOptionIdsMap = new HashMap<>();
+        Map<Long, Set<Long>> selectedOptionIdsMap = new HashMap<>(); // Zielformat bleibt gleich
 
         for (Submission submission : submissionsList) {
-            Long qId = submission.questionId().getId(); // Frage-ID extrahieren
+            Long qId = submission.questionId().getId();
 
-            // Prüfe, ob es eine Freitext-Antwort ist
-            if (submission.submittedText() != null) { // Sicherer Check für Freitext
+            if (submission.submittedText() != null) {
                 submittedFreetextAnswers.put(qId, submission.submittedText());
             }
-            // Prüfe, ob es eine MC-Antwort ist (selectedOptions ist nicht leer)
+            // *** GEÄNDERT: Konvertierung von Set<SubmissionSelectedOptionRef> zu Set<Long>
+            // ***
             else if (submission.selectedOptions() != null && !submission.selectedOptions().isEmpty()) {
-                // Extrahiere die IDs der ausgewählten Optionen
+                // Extrahiere die Long IDs aus den SubmissionSelectedOptionRef-Objekten
                 Set<Long> optionIds = submission.selectedOptions().stream()
-                        .map(AggregateReference::getId) // Hole die Long ID aus der Referenz
+                        .map(SubmissionSelectedOptionRef::answerOptionId) // Hole die Long ID
                         .collect(Collectors.toSet());
                 selectedOptionIdsMap.put(qId, optionIds);
             }
         }
         log.debug("Prepared freetext answers map: {}", submittedFreetextAnswers);
-        log.debug("Prepared selected MC options map: {}", selectedOptionIdsMap);
+        log.debug("Prepared selected MC options map for template: {}", selectedOptionIdsMap);
 
         model.addAttribute("test", test);
-        // --- NEU: Beide Maps dem Model hinzufügen ---
-        model.addAttribute("submittedFreetextAnswers", submittedFreetextAnswers); // Name für Klarheit angepasst
-        model.addAttribute("selectedOptionIdsMap", selectedOptionIdsMap); // Neue Map für MC
+        model.addAttribute("submittedFreetextAnswers", submittedFreetextAnswers);
+        model.addAttribute("selectedOptionIdsMap", selectedOptionIdsMap); // Hier bleibt es Set<Long> für das Template
         model.addAttribute("isReadOnly", isReadOnly);
 
         return "student/test_view"; // Name deiner Thymeleaf-Vorlage
