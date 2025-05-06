@@ -116,56 +116,55 @@ public class TestServiceImpl implements TestService { // Stelle sicher, dass dei
             throw new IllegalStateException("Der Test ist derzeit nicht bearbeitbar.");
         }
 
-        // 2. AggregateReferences erstellen
-        AggregateReference<Test, Long> testRef = AggregateReference.to(testId);
-        AggregateReference<Question, Long> questionRef = AggregateReference.to(questionId);
-
-        // 3. Versuchen, eine vorhandene Submission zu finden
+        // 2. Versuchen, eine vorhandene Submission zu finden
         Optional<Submission> existingSubmissionOpt = submissionRepository.findByTestIdAndQuestionIdAndStudentGithubId(
-                testRef, questionRef, studentGithubId);
+                testId, questionId, studentGithubId);
 
-        // 4. Konvertiere die übergebenen Option-IDs in AggregateReferences
-        // (Nur relevant für MC-Fragen)
+        // 3. Konvertiere die übergebenen Option-IDs in AggregateReferences
+        // (Nur relevant für MC-Fragen, WENN eine neue Submission erstellt wird oder
+        // eine MC-Submission aktualisiert)
         final Set<AggregateReference<AnswerOption, Long>> selectedOptionRefs;
         if (selectedOptionIds != null && !selectedOptionIds.isEmpty()) {
             selectedOptionRefs = selectedOptionIds.stream()
                     .map(AggregateReference::<AnswerOption, Long>to)
                     .collect(Collectors.toSet());
         } else {
-            selectedOptionRefs = Collections.emptySet(); // Leeres Set, falls null oder leer übergeben wird
+            selectedOptionRefs = Collections.emptySet();
         }
 
         Submission submissionToSave;
         if (existingSubmissionOpt.isPresent()) {
-            // 4a. Vorhandene Submission aktualisieren
+            // 3a. Vorhandene Submission aktualisieren
             Submission existing = existingSubmissionOpt.get();
             log.trace("Found existing submission with ID: {}", existing.id());
 
-            // Entscheide, ob Freitext oder MC aktualisiert wird
-            // Annahme: Entweder submittedText ODER selectedOptionIds ist relevant
-            if (submittedText != null) { // Es ist ein Freitext-Update
+            if (submittedText != null) {
                 submissionToSave = existing.updateFreeText(submittedText);
                 log.trace("Updating existing freetext submission {}", existing.id());
-            } else { // Es ist ein MC-Update (auch wenn selectedOptionRefs leer ist -> Auswahl
-                     // entfernt)
-                submissionToSave = existing.updateSelectedOptions(selectedOptionRefs);
+            } else { // MC-Update
+                submissionToSave = existing.updateSelectedOptions(selectedOptionRefs); // Hier werden die Refs verwendet
                 log.trace("Updating existing MC submission {} with options {}", existing.id(), selectedOptionIds);
             }
         } else {
-            // 4b. Neue Submission erstellen
+            // 3b. Neue Submission erstellen
+            // Für die Erstellung der neuen Submission brauchen wir die AggregateReferences
+            // für Test und Question
+            AggregateReference<Test, Long> testRefForNew = AggregateReference.to(testId);
+            AggregateReference<Question, Long> questionRefForNew = AggregateReference.to(questionId);
+
             log.trace("No existing submission found for test {}, question {}, student {}. Creating new one.", testId,
                     questionId, studentGithubId);
-            // Entscheide, ob Freitext oder MC erstellt wird
-            if (submittedText != null) { // Neue Freitext-Submission
-                submissionToSave = new Submission(testRef, questionRef, studentGithubId, submittedText);
+            if (submittedText != null) {
+                submissionToSave = new Submission(testRefForNew, questionRefForNew, studentGithubId, submittedText);
                 log.trace("Creating new freetext submission.");
             } else { // Neue MC-Submission
-                submissionToSave = new Submission(testRef, questionRef, studentGithubId, selectedOptionRefs);
+                submissionToSave = new Submission(testRefForNew, questionRefForNew, studentGithubId,
+                        selectedOptionRefs); // Hier werden die Refs verwendet
                 log.trace("Creating new MC submission with options {}.", selectedOptionIds);
             }
         }
 
-        // 5. Speichern (entweder INSERT oder UPDATE, basierend auf vorhandener ID)
+        // 4. Speichern
         log.debug("Saving submission: {}", submissionToSave);
         Submission savedSubmission = submissionRepository.save(submissionToSave);
         log.info("Successfully saved submission with ID: {}", savedSubmission.id());
