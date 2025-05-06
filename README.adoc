@@ -1,33 +1,83 @@
-= Dokumentation
+# 📝 Exambyte - Online Examination Platform (University Project)
 
-== 1. Einleitung
-bytemeifucan ist ein neues Testsystem für die Klausurzulassung im Programmierpraktikum, das Ilias ersetzen soll.
+## Motivation & Context
 
-== 1.1 Projektübersicht
-bytemeifucan bietet folgende
-Hauptfunktionen:
+ExamByte was developed as a semester-long project for the "Programming Lab 2" module. The primary motivation was to apply and deepen software engineering principles learned throughout our studies by building a practical, web-based application to streamline the examination process for students, correctors, and organizers.
 
-* Unterstützung der Testausführung
-* Ermöglichung manueller Korrektur von Freitextaufgaben
-* Darstellung der Ergebnisse für Studierende und Organisator:innen
+The project emphasized the application of established coding principles such as Domain-Driven Design (DDD), Test-Driven Development (TDD), and SOLID (just to name a few), alongside UML modeling to foster a maintainable, understandable, and well-structured codebase.
 
-Das System zielt darauf ab, den Prüfungsprozess zu optimieren und eine effiziente Verwaltung der Klausurzulassung zu gewährleisten.
+## How To Use
 
-== 2. Systemarchitektur
-* Überblick
-* (Verwendete Sprachen, Frameworks, Tools)
+1.  **Sign in with GitHub:** Authentication is managed via GitHub OAuth, with distinct roles assigned to users.
+2.  **Role-Specific Navigation:**
+    *   **Students:** Access a dashboard to view available tests. They can take active tests, submitting answers for Multiple-Choice and Free-Text questions, and save their progress within the allocated time frame.
+    *   **Organizers:** Utilize functionalities for test creation (including setting various question types and time controls) and have access to all submissions.
+    *   **Correctors:** Access free-text submissions for manual grading, including point allocation and feedback.
 
-== 3. Funktionalitäten
-* Testausführung (Testformate)
-* manuelle und automatisierte Korrektur (Workflow, Benutzeroberfläche, Bewertung)
-* Darstellung der Ergebnisse (Beschreibung der Ansicht, Datenschutz)
+## Core Features Implemented
 
-== 4. Implementierung
-* Codestruktur, Styleguide
-* Testing, Qualitätssicherung (Unit Tests, Integrationstests, TDD)
+*   **User Authentication & Basic Role System:**
+    *   GitHub OAuth2 for user login.
+    *   Functional roles for Student, Organizer, and Corrector with basic access controls in place.
+*   **Test Creation & Management (Organizer Focus):**
+    *   Interface for creating new tests.
+    *   Ability to add and edit both Multiple-Choice (MC) and Free-Text questions.
+    *   Support for HTML content within question texts and MC answer options.
+    *   Management of test timings (start, end, result publication).
+*   **Student Test-Taking Workflow:**
+    *   Dashboard listing available tests for students.
+    *   Interface for students to view and take active tests.
+    *   Submission and saving of answers for both MC and Free-Text questions.
+    *   Time-controlled test access (tests become read-only after end time).
+*   **Manual Free-Text Grading (Corrector Focus):**
+    *   Interface for correctors to access and review free-text submissions.
+    *   Functionality for assigning points and providing textual feedback.
+*   **Basic Organizer Oversight:**
+    *   Organizers can access all submitted answers.
+    *   Organizers can modify scores for all submissions.
 
-== 5. Kontaktinformationen
-Im Folgenden finden Sie die GitHub-Handles der Personen, die an der Anwendung beteiligt sind.
+## Work in Progress / Partially Implemented Features
 
-* Ruth Kong https://github.com/SahneJoghurt[@SahneJoghurt]
-* Deshen Rao https://github.com/Deshenfektion[@Deshenfektion]
+*   **User Roles & Permissions:**
+    *   **Configuration-driven Role Assignment:** Mechanism to load user-to-role mappings from an external configuration file (currently roles are likely hardcoded or managed differently).
+    *   **Granular Corrector Assignment:** System for assigning specific free-text tasks to specific correctors (currently correctors may see all or a broad set).
+*   **Test Question Types:**
+    *   **MC Questions - Post-Test Display:** Viewing correct answers and explanations after the test's end time.
+    *   **Free-Text Questions - Post-Test Display:** Viewing solution proposals after the test's end time.
+*   **Test Management (Organizer):**
+    *   **Test Preview:** While a service method exists, the full UI/controller endpoint for organizers to preview tests before activation.
+*   **Test Grading & Evaluation:**
+    *   **Automated MC Question Grading:** The scoring logic (full points for all correct, half for one error, zero for more) is not yet implemented.
+    *   **Mandatory Feedback Rule:** Enforcing feedback for non-maximum scores in free-text grading.
+    *   **HTML Escaping for Feedback:** Ensuring feedback text is safely displayed to students.
+    *   **"Pass/Fail" Logic:** Calculating if a test is passed based on achieving at least 50% of total points.
+*   **Student Dashboard & Results:**
+    *   **Display of Detailed Results:** Showing scores and feedback to students after the result publication time.
+    *   **Clear Indication of Result Availability:** UI element informing students when results will be visible.
+
+## Tech Stack
+
+*   **Backend:** Java, Spring Boot (Spring MVC, Spring Security, Spring Data JDBC)
+*   **Frontend:** Thymeleaf, HTML, CSS (Inline/Embedded)
+*   **Database:** PostgreSQL
+*   **Build Tool:** Gradle
+*   **Testing:** JUnit, Mockito
+*   **Authentication:** OAuth2 with GitHub
+*   **Design & Modeling:** UML, DDD Principles
+
+## Future Scope / Missing Features (Planned)
+
+*   **Advanced Organizer Functionality:**
+    *   Marking an entire test as "failed" for a student with a justification.
+    *   Comprehensive comparative test result overviews.
+    *   CSV export of test results.
+*   **Student Admission Status:**
+    *   Displaying "passed/failed" status for individual graded tests on the dashboard.
+    *   Implementing the full logic and UI for the multi-state admission status (4 initial states, 2 final states after 14 tests).
+    *   Visual representation (colors/symbols) for admission status.
+*   **Correction & Result Oversight (Organizer):**
+    *   Dashboard/overview of correction progress (Korrekturstand) to identify delays.
+    *   Detailed result analysis per test to identify problematic questions or student misunderstandings.
+    *   Aggregated view of all free-text submissions per question, with sorting, to identify similarities.
+
+---
