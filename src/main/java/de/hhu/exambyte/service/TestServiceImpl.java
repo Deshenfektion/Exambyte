@@ -176,9 +176,12 @@ public class TestServiceImpl implements TestService { // Stelle sicher, dass dei
     @Transactional(readOnly = true)
     public List<Submission> getSubmissionsForStudentTest(long testId, String studentGithubId) {
         log.debug("Getting submissions for student {} in test {}", studentGithubId, testId);
-        AggregateReference<Test, Long> testRef = AggregateReference.to(testId);
-        // Diese Methode lädt jetzt dank @MappedCollection automatisch
-        // auch die 'selectedOptions' für jede Submission mit.
-        return submissionRepository.findByTestIdAndStudentGithubId(testRef, studentGithubId);
+        // Rufe die Repository-Methode auf, die jetzt @Query verwendet
+        // Übergib testId direkt als Long
+        List<Submission> submissions = submissionRepository.findByTestIdAndStudentGithubId(testId, studentGithubId);
+        log.debug("Found {} submissions for student {} in test {}", submissions.size(), studentGithubId, testId);
+        // Spring Data JDBC sollte die selectedOptions für jede Submission automatisch
+        // nachladen (basierend auf @MappedCollection)
+        return submissions;
     }
 }

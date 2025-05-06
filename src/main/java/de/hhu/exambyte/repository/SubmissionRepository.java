@@ -1,7 +1,9 @@
 package de.hhu.exambyte.repository;
 
 import org.springframework.data.jdbc.core.mapping.AggregateReference;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import de.hhu.exambyte.domain.model.Question;
@@ -17,6 +19,18 @@ import java.util.Optional;
  */
 @Repository // Markiert dies als Spring Bean und Repository
 public interface SubmissionRepository extends CrudRepository<Submission, Long> {
+
+    /**
+     * Findet alle Einreichungen eines bestimmten Studierenden für einen bestimmten
+     * Test.
+     * BENUTZT JETZT @Query, um das Problem mit der Query-Ableitung zu umgehen.
+     */
+    @Query("SELECT s.id, s.test_id, s.question_id, s.student_github_id, s.submitted_text, s.score, s.feedback " +
+            "FROM submissions s " +
+            "WHERE s.test_id = :testId AND s.student_github_id = :studentGithubId")
+    List<Submission> findByTestIdAndStudentGithubId(
+            @Param("testId") Long testId, // Verwende Long direkt
+            @Param("studentGithubId") String studentGithubId);
 
     // Standard-CRUD-Methoden sind verfügbar.
 
