@@ -9,14 +9,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.data.jdbc.core.mapping.AggregateReference; // Importieren
 
 import de.hhu.exambyte.domain.model.Submission;
 import de.hhu.exambyte.domain.model.Test;
 import de.hhu.exambyte.service.TestService;
+import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap; // Importieren
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set; // Importieren
 import java.util.stream.Collectors;
 
 @Controller
@@ -30,56 +37,42 @@ public class StudentController {
         this.testService = testService;
     }
 
-    // Helper Methode um die GitHub Login ID sicher zu extrahieren
-    // Diese Methode MUSS angepasst werden, je nachdem welches Attribut
-    // in deiner *aktuellen* Security Config den eindeutigen User kennzeichnet!
-    // GitHub liefert oft 'login' (Username) oder 'id' (numerische ID).
-    // Da du deine alte Config behältst, prüfe was dort verwendet wurde.
-    // Im Beispiel von vorhin war es 'login'.
+    // --- getStudentId Methode bleibt unverändert ---
     private String getStudentId(OAuth2User principal) {
+        log.error("getStudentId called. Principal: {}", principal); // NEUES LOG
+
         if (principal == null) {
             log.error("OAuth2User principal is null!");
-            return null; // Oder wirf eine Exception
+            return null;
         }
-        // Prüfe, welches Attribut in deinem OAuth2User vorhanden und eindeutig ist.
-        // Übliche Kandidaten: "login", "id", "sub"
         String studentId = principal.getAttribute("login");
+        log.error("Attribute 'login' from principal: {}", studentId); // NEUES LOG
+
         if (studentId == null) {
             log.error("Could not retrieve 'login' attribute from principal. Available attributes: {}",
                     principal.getAttributes());
-            // Fallback oder Fehler werfen
             return null;
         }
-        // Für die Speicherung in 'submission' ist evtl. ein Prefix sinnvoll,
-        // um Nutzer von verschiedenen Providern (falls später erweitert) zu
-        // unterscheiden
-        // return "github|" + studentId; // Konsistent mit OrganizerControllerTest?
-        // Checken!
-        return studentId; // Oder einfach den Login, wenn nur GitHub verwendet wird
+        return studentId;
     }
 
+    // --- studentDashboard Methode bleibt unverändert ---
     @GetMapping("/dashboard")
-    @Secured("ROLE_STUDENT") // Stelle sicher, dass dies mit deiner Config übereinstimmt
+    @Secured("ROLE_STUDENT")
     public String studentDashboard(Model model, @AuthenticationPrincipal OAuth2User principal) {
         String studentId = getStudentId(principal);
         if (studentId == null) {
-            // Fehlerbehandlung: Nicht eingeloggt oder ID nicht gefunden
             return "redirect:/error?message=user_not_found";
         }
         log.info("Accessing student dashboard for user: {}", studentId);
-        model.addAttribute("username", studentId); // Zeige den Namen/Login im Template an
+        model.addAttribute("username", studentId);
 
-        // Lade Tests für den Studenten (vereinfachte Version)
         List<Test> tests = testService.getTestsForStudent(studentId);
         model.addAttribute("tests", tests);
-
-        // TODO: Lade Zulassungsstatus (später)
-        // model.addAttribute("admissionStatus",
-        // resultService.getAdmissionStatus(studentId));
-
-        return "student/dashboard"; // Pfad zur Thymeleaf-Vorlage
+        return "student/dashboard";
     }
 
+    // --- viewTest Methode ANPASSEN ---
     @GetMapping("/tests/{testId}")
     @Secured("ROLE_STUDENT")
     public String viewTest(@PathVariable long testId, Model model, @AuthenticationPrincipal OAuth2User principal) {
@@ -92,87 +85,157 @@ public class StudentController {
 
         if (testOpt.isEmpty()) {
             log.warn("Test {} not found or not accessible for student {}", testId, studentId);
-            // TODO: Bessere Fehlerseite oder Nachricht anzeigen
             model.addAttribute("errorMessage", "Test nicht gefunden oder nicht verfügbar.");
-            return "student/dashboard"; // Zurück zum Dashboard mit Fehlermeldung
+            // Leite zum Dashboard weiter, wenn der Test nicht gefunden wurde
+            // oder gib eine spezielle Fehlerseite zurück.
+            return "redirect:/student/dashboard?error=Test+nicht+gefunden";
         }
 
         Test test = testOpt.get();
-        boolean isReadOnly = !testService.isTestActive(testId); // Prüfen, ob Testzeitraum aktiv ist
+        boolean isReadOnly = !testService.isTestActive(testId);
         log.debug("Test {} is active: {}", testId, !isReadOnly);
 
         // Lade bereits vorhandene Einreichungen für diesen Test und Studenten
         List<Submission> submissionsList = testService.getSubmissionsForStudentTest(testId, studentId);
-        // Wandle Liste in eine Map<QuestionID, SubmittedText> um für einfachen Zugriff
-        // im Template
-        Map<Long, String> submittedAnswers = submissionsList.stream()
-                .filter(s -> s.submittedText() != null) // Nur Freitext für's Erste
-                .collect(Collectors.toMap(
-                        s -> s.questionId().getId(), // Schlüssel: Question ID
-                        Submission::submittedText, // Wert: Eingereichter Text
-                        (existing, replacement) -> replacement // Bei Duplikaten (sollte nicht vorkommen) nimm den neuen
-                ));
+
+        // --- NEU: Maps für beide Antworttypen erstellen ---
+        Map<Long, String> submittedFreetextAnswers = new HashMap<>();
+        Map<Long, Set<Long>> selectedOptionIdsMap = new HashMap<>();
+
+        for (Submission submission : submissionsList) {
+            Long qId = submission.questionId().getId(); // Frage-ID extrahieren
+
+            // Prüfe, ob es eine Freitext-Antwort ist
+            if (submission.submittedText() != null) { // Sicherer Check für Freitext
+                submittedFreetextAnswers.put(qId, submission.submittedText());
+            }
+            // Prüfe, ob es eine MC-Antwort ist (selectedOptions ist nicht leer)
+            else if (submission.selectedOptions() != null && !submission.selectedOptions().isEmpty()) {
+                // Extrahiere die IDs der ausgewählten Optionen
+                Set<Long> optionIds = submission.selectedOptions().stream()
+                        .map(AggregateReference::getId) // Hole die Long ID aus der Referenz
+                        .collect(Collectors.toSet());
+                selectedOptionIdsMap.put(qId, optionIds);
+            }
+        }
+        log.debug("Prepared freetext answers map: {}", submittedFreetextAnswers);
+        log.debug("Prepared selected MC options map: {}", selectedOptionIdsMap);
 
         model.addAttribute("test", test);
-        model.addAttribute("submittedAnswers", submittedAnswers); // Map für einfachen Zugriff auf Antworten
-        model.addAttribute("isReadOnly", isReadOnly); // Flag für Template (Felder sperren?)
+        // --- NEU: Beide Maps dem Model hinzufügen ---
+        model.addAttribute("submittedFreetextAnswers", submittedFreetextAnswers); // Name für Klarheit angepasst
+        model.addAttribute("selectedOptionIdsMap", selectedOptionIdsMap); // Neue Map für MC
+        model.addAttribute("isReadOnly", isReadOnly);
 
-        return "student/test_view"; // Pfad zur Testansicht-Vorlage
+        return "student/test_view"; // Name deiner Thymeleaf-Vorlage
     }
+
+    // In StudentController.java
 
     @PostMapping("/tests/{testId}/submit")
     @Secured("ROLE_STUDENT")
     public String submitTest(
             @PathVariable long testId,
-            // Empfängt alle Formularparameter. Wir extrahieren die Antworten daraus.
-            // Der Key sollte "answers[QUESTION_ID]" sein, wie im Formular definiert.
-            @RequestParam Map<String, String> allParams,
+            // Wir verwenden HttpServletRequest, um alle Parameterwerte zu bekommen,
+            // insbesondere für MC-Fragen mit Mehrfachauswahl.
+            HttpServletRequest request, // <-- WICHTIGE ÄNDERUNG!
             @AuthenticationPrincipal OAuth2User principal,
             RedirectAttributes redirectAttributes) {
 
+        log.error("!!!!!!!!!!! SUBMITTEST METHOD ENTERED (Test ID: {}) !!!!!!!!!!!", testId);
+        // Logge die Parameter direkt aus dem Request, um zu sehen, was ankommt
+        request.getParameterMap()
+                .forEach((key, value) -> log.debug("Request Param: {} = {}", key, Arrays.toString(value)));
+
         String studentId = getStudentId(principal);
-        if (studentId == null)
+        if (studentId == null) {
+            log.error("StudentId is null, redirecting to error page.");
             return "redirect:/error?message=user_not_found";
+        }
         log.info("Student {} submitting answers for test {}", studentId, testId);
 
-        try {
-            // Iteriere durch die übermittelten Parameter und suche nach Antworten
-            for (Map.Entry<String, String> entry : allParams.entrySet()) {
-                String paramName = entry.getKey();
-                // Prüfe, ob der Parametername unserem Antwortformat entspricht (z.B.
-                // "answers[123]")
-                if (paramName.startsWith("answers[") && paramName.endsWith("]")) {
-                    try {
-                        // Extrahiere Question ID aus dem Parameternamen
-                        long questionId = Long.parseLong(paramName.substring(8, paramName.length() - 1));
-                        String submittedText = entry.getValue();
+        boolean isActive = testService.isTestActive(testId);
+        if (!isActive) {
+            log.warn("Submission attempt failed for test {}: Test is no longer active.", testId);
+            redirectAttributes.addFlashAttribute("errorMessage", "Der Test ist nicht mehr bearbeitbar.");
+            return "redirect:/student/tests/" + testId;
+        }
 
-                        log.debug("Processing answer for question {}: '{}'", questionId, submittedText);
-                        // Speichere die Antwort über den Service
-                        testService.saveOrUpdateSubmission(testId, questionId, studentId, submittedText, null);
+        try {
+            // Sammle alle Question-IDs, die im Request vorkommen (sowohl Freetext als auch
+            // MC)
+            Set<Long> questionIdsFromRequest = new HashSet<>();
+            for (String paramName : Collections.list(request.getParameterNames())) {
+                if (paramName.startsWith("answersFreetext[") && paramName.endsWith("]")) {
+                    try {
+                        String idStr = paramName.substring("answersFreetext[".length(), paramName.length() - 1);
+                        questionIdsFromRequest.add(Long.parseLong(idStr));
                     } catch (NumberFormatException e) {
-                        log.warn("Could not parse question ID from parameter name: {}", paramName);
-                        // Ignoriere diesen Parameter oder logge einen Fehler
-                    } catch (IllegalStateException e) {
-                        // Test ist nicht mehr aktiv -> Fehler an Benutzer
-                        log.warn("Submission failed for test {}: {}", testId, e.getMessage());
-                        redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-                        // Redirect zurück zur (jetzt read-only) Testansicht
-                        return "redirect:/student/tests/" + testId;
+                        /* ignoriere ungültige */ }
+                } else if (paramName.startsWith("answersMC[") && paramName.endsWith("]")) {
+                    try {
+                        String idStr = paramName.substring("answersMC[".length(), paramName.length() - 1);
+                        questionIdsFromRequest.add(Long.parseLong(idStr));
+                    } catch (NumberFormatException e) {
+                        /* ignoriere ungültige */ }
+                }
+            }
+            log.debug("Found question IDs in request to process: {}", questionIdsFromRequest);
+
+            // Iteriere über die gefundenen Question-IDs und verarbeite sie
+            for (Long questionId : questionIdsFromRequest) {
+                String submittedText = null;
+                Set<Long> selectedOptionIds = null;
+
+                // Versuche, Freitext für diese questionId zu bekommen
+                String freetextParamName = "answersFreetext[" + questionId + "]";
+                String[] freetextValues = request.getParameterValues(freetextParamName);
+                if (freetextValues != null && freetextValues.length > 0) {
+                    // Nimm den ersten Wert (sollte nur einer sein für Textarea)
+                    submittedText = freetextValues[0];
+                    log.debug("Processing FreeText for question {}: '{}'", questionId, submittedText);
+                }
+
+                // Versuche, MC-Optionen für diese questionId zu bekommen
+                String mcParamName = "answersMC[" + questionId + "]";
+                String[] mcOptionValues = request.getParameterValues(mcParamName); // Gibt alle Werte für diesen Namen
+                                                                                   // zurück
+
+                if (mcOptionValues != null && mcOptionValues.length > 0) {
+                    selectedOptionIds = new HashSet<>();
+                    for (String optionIdStr : mcOptionValues) {
+                        try {
+                            selectedOptionIds.add(Long.parseLong(optionIdStr));
+                        } catch (NumberFormatException e) {
+                            log.warn("Could not parse option ID '{}' for MC question {}", optionIdStr, questionId);
+                        }
                     }
+                    log.debug("Processing MC for question {}: Options {}", questionId, selectedOptionIds);
+                }
+
+                // Speichere die Submission, wenn Text oder Optionen vorhanden sind
+                // Oder auch, wenn keine MC-Optionen gewählt wurden (leeres Set speichern)
+                if (submittedText != null || selectedOptionIds != null) {
+                    testService.saveOrUpdateSubmission(testId, questionId, studentId, submittedText,
+                            selectedOptionIds != null ? selectedOptionIds : Collections.emptySet()); // Stelle sicher,
+                                                                                                     // dass Set nicht
+                                                                                                     // null ist
+                } else if (mcOptionValues != null) { // Es war eine MC-Frage, aber nichts ausgewählt
+                    log.debug("MC question {} had no options selected. Saving empty selection.", questionId);
+                    testService.saveOrUpdateSubmission(testId, questionId, studentId, null, Collections.emptySet());
                 }
             }
 
             log.info("Successfully processed submissions for student {} in test {}", studentId, testId);
             redirectAttributes.addFlashAttribute("successMessage", "Deine Antworten wurden gespeichert!");
-            // Leite zurück zum Dashboard oder zur Testansicht
             return "redirect:/student/dashboard";
 
         } catch (Exception e) {
             log.error("Error processing submission for student {} in test {}: {}", studentId, testId, e.getMessage(),
                     e);
-            redirectAttributes.addFlashAttribute("errorMessage", "Ein unerwarteter Fehler ist aufgetreten.");
-            return "redirect:/student/tests/" + testId; // Zurück zur Testansicht
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Ein unerwarteter Fehler beim Speichern ist aufgetreten.");
+            return "redirect:/student/tests/" + testId;
         }
     }
 }

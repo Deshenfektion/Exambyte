@@ -1,9 +1,23 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <!-- sec hinzugefügt, falls noch nicht da -->
   <head>
     <meta charset="UTF-8" />
     <title th:text="'Test: ' + ${test.title}">Test Ansicht</title>
-    <!-- CSS etc. -->
+    <!-- Dein CSS etc. -->
+    <style>
+      /* Optional: Etwas Abstand für die Optionen */
+      .mc-option {
+        margin-bottom: 5px;
+        display: block; /* Sorgt dafür, dass jede Option auf einer neuen Zeile ist */
+      }
+      label {
+        margin-left: 5px; /* Kleiner Abstand zwischen Checkbox/Radio und Text */
+      }
+    </style>
   </head>
   <body>
     <h1 th:text="${test.title}">Test Titel</h1>
@@ -31,7 +45,7 @@
       nicht gestartet).
     </div>
 
-    <!-- Anzeige von Erfolgs-/Fehlermeldungen von Redirects -->
+    <!-- Anzeige von Erfolgs-/Fehlermeldungen -->
     <div
       th:if="${successMessage}"
       style="color: green"
@@ -43,7 +57,8 @@
       th:text="${errorMessage}"
     ></div>
 
-    <!-- Das Formular umschließt alle Fragen und sendet an den Submit-Endpunkt -->
+    <!-- Das Formular umschließt alle Fragen -->
+    <!-- WICHTIG: Controller muss POST auf /student/tests/{id}/submit verarbeiten -->
     <form
       method="post"
       th:action="@{/student/tests/{id}/submit(id=${test.id})}"
@@ -77,25 +92,52 @@
           <div
             th:case="${T(de.hhu.exambyte.domain.model.QuestionType).FREETEXT}"
           >
-            <label th:for="'q_' + ${question.id}">Deine Antwort:</label><br />
+            <label th:for="'q_freetext_' + ${question.id}">Deine Antwort:</label
+            ><br />
+            <!-- Name geändert, um Kollision mit MC zu vermeiden, falls beide gesendet werden -->
             <textarea
-              th:id="'q_' + ${question.id}"
+              th:id="'q_freetext_' + ${question.id}"
               rows="5"
               cols="80"
-              th:name="'answers[' + ${question.id} + ']'"
-              th:text="${submittedAnswers.get(question.id)}"
+              th:name="'answersFreetext[' + ${question.id} + ']'"
+              th:text="${submittedFreetextAnswers != null ? submittedFreetextAnswers.get(question.id) : ''}"
               th:disabled="${isReadOnly}"
             >
             </textarea>
           </div>
 
-          <!-- Fall: Multiple Choice (Platzhalter für später) -->
+          <!-- Fall: Multiple Choice -->
           <div th:case="${T(de.hhu.exambyte.domain.model.QuestionType).MC}">
-            <p><i>(Multiple Choice wird noch nicht unterstützt)</i></p>
-            <!-- Hier kämen Radiobuttons/Checkboxes für question.options hin -->
+            <p>Wähle die richtige(n) Antwort(en):</p>
+            <!-- Iteriere durch die Antwortoptionen der Frage -->
+            <!-- Annahme: question hat ein Feld/Getter 'answerOptions' -->
+            <!-- Annahme: Controller übergibt Map<Long, Set<Long>> selectedOptionIdsMap -->
+            <div th:each="option : ${question.options}" class="mc-option">
+              <input
+                type="checkbox"
+                th:id="'option_' + ${option.id}"
+                th:name="'answersMC[' + ${question.id} + ']'"
+                th:value="${option.id}"
+                th:checked="${selectedOptionIdsMap != null and selectedOptionIdsMap.containsKey(question.id) and #lists.contains(selectedOptionIdsMap.get(question.id), option.id)}"
+                th:disabled="${isReadOnly}"
+              />
+              <label
+                th:for="'option_' + ${option.id}"
+                th:utext="${option.optionText}"
+                >Option Text</label
+              >
+            </div>
+            <!-- Falls keine Optionen vorhanden sind (sollte nicht passieren, aber sicher ist sicher) -->
+            <div th:if="${#lists.isEmpty(question.options)}">
+              <p style="color: grey">
+                (Keine Antwortoptionen für diese Frage verfügbar)
+              </p>
+            </div>
           </div>
         </div>
+        <!-- Ende th:switch -->
       </div>
+      <!-- Ende Frage-Div -->
 
       <!-- Senden-Button (nur aktiv, wenn Test bearbeitbar) -->
       <button type="submit" th:disabled="${isReadOnly}">
