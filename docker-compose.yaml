@@ -4,8 +4,11 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - "POSTGRES_DB=bytemeifyoucan"
-      - "POSTGRES_USER=bytemeifyoucan"
-      - "POSTGRES_PASSWORD=propra2"
+      POSTGRES_DB: bytemeifyoucan
+      POSTGRES_USER: bytemeifyoucan
+      POSTGRES_PASSWORD: propra2
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data # Named Volume statt lokaler Ordner
+
+volumes:
+  pgdata: # Leere Definition reicht
