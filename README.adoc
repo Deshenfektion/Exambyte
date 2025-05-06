@@ -1,4 +1,4 @@
-# 📝 ExamByte - Online Examination Platform (University Project)
+# 📝 Exambyte - Online Examination Platform (University Project)
 
 ## Motivation & Context
 
