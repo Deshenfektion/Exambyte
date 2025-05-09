@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.data.jdbc.core.mapping.AggregateReference; // Importieren
 
 import de.hhu.exambyte.domain.model.Submission;
 import de.hhu.exambyte.domain.model.SubmissionSelectedOptionRef;
@@ -19,12 +18,12 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap; // Importieren
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set; // Importieren
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
@@ -38,16 +37,15 @@ public class StudentController {
         this.testService = testService;
     }
 
-    // --- getStudentId Methode bleibt unverändert ---
     private String getStudentId(OAuth2User principal) {
-        log.error("getStudentId called. Principal: {}", principal); // NEUES LOG
+        log.error("getStudentId called. Principal: {}", principal);
 
         if (principal == null) {
             log.error("OAuth2User principal is null!");
             return null;
         }
         String studentId = principal.getAttribute("login");
-        log.error("Attribute 'login' from principal: {}", studentId); // NEUES LOG
+        log.error("Attribute 'login' from principal: {}", studentId);
 
         if (studentId == null) {
             log.error("Could not retrieve 'login' attribute from principal. Available attributes: {}",
@@ -57,7 +55,6 @@ public class StudentController {
         return studentId;
     }
 
-    // --- studentDashboard Methode bleibt unverändert ---
     @GetMapping("/dashboard")
     @Secured("ROLE_STUDENT")
     public String studentDashboard(Model model, @AuthenticationPrincipal OAuth2User principal) {
@@ -73,7 +70,6 @@ public class StudentController {
         return "student/dashboard";
     }
 
-    // --- viewTest Methode ANPASSEN ---
     @GetMapping("/tests/{testId}")
     @Secured("ROLE_STUDENT")
     public String viewTest(@PathVariable long testId, Model model, @AuthenticationPrincipal OAuth2User principal) {
@@ -87,8 +83,6 @@ public class StudentController {
         if (testOpt.isEmpty()) {
             log.warn("Test {} not found or not accessible for student {}", testId, studentId);
             model.addAttribute("errorMessage", "Test nicht gefunden oder nicht verfügbar.");
-            // Leite zum Dashboard weiter, wenn der Test nicht gefunden wurde
-            // oder gib eine spezielle Fehlerseite zurück.
             return "redirect:/student/dashboard?error=Test+nicht+gefunden";
         }
 
@@ -100,20 +94,16 @@ public class StudentController {
         List<Submission> submissionsList = testService.getSubmissionsForStudentTest(testId, studentId);
 
         Map<Long, String> submittedFreetextAnswers = new HashMap<>();
-        Map<Long, Set<Long>> selectedOptionIdsMap = new HashMap<>(); // Zielformat bleibt gleich
+        Map<Long, Set<Long>> selectedOptionIdsMap = new HashMap<>();
 
         for (Submission submission : submissionsList) {
             Long qId = submission.questionId().getId();
 
             if (submission.submittedText() != null) {
                 submittedFreetextAnswers.put(qId, submission.submittedText());
-            }
-            // *** GEÄNDERT: Konvertierung von Set<SubmissionSelectedOptionRef> zu Set<Long>
-            // ***
-            else if (submission.selectedOptions() != null && !submission.selectedOptions().isEmpty()) {
-                // Extrahiere die Long IDs aus den SubmissionSelectedOptionRef-Objekten
+            } else if (submission.selectedOptions() != null && !submission.selectedOptions().isEmpty()) {
                 Set<Long> optionIds = submission.selectedOptions().stream()
-                        .map(SubmissionSelectedOptionRef::answerOptionId) // Hole die Long ID
+                        .map(SubmissionSelectedOptionRef::answerOptionId)
                         .collect(Collectors.toSet());
                 selectedOptionIdsMap.put(qId, optionIds);
             }
@@ -123,26 +113,21 @@ public class StudentController {
 
         model.addAttribute("test", test);
         model.addAttribute("submittedFreetextAnswers", submittedFreetextAnswers);
-        model.addAttribute("selectedOptionIdsMap", selectedOptionIdsMap); // Hier bleibt es Set<Long> für das Template
+        model.addAttribute("selectedOptionIdsMap", selectedOptionIdsMap);
         model.addAttribute("isReadOnly", isReadOnly);
 
-        return "student/test_view"; // Name deiner Thymeleaf-Vorlage
+        return "student/test_view";
     }
-
-    // In StudentController.java
 
     @PostMapping("/tests/{testId}/submit")
     @Secured("ROLE_STUDENT")
     public String submitTest(
             @PathVariable long testId,
-            // Wir verwenden HttpServletRequest, um alle Parameterwerte zu bekommen,
-            // insbesondere für MC-Fragen mit Mehrfachauswahl.
-            HttpServletRequest request, // <-- WICHTIGE ÄNDERUNG!
+            HttpServletRequest request,
             @AuthenticationPrincipal OAuth2User principal,
             RedirectAttributes redirectAttributes) {
 
         log.error("!!!!!!!!!!! SUBMITTEST METHOD ENTERED (Test ID: {}) !!!!!!!!!!!", testId);
-        // Logge die Parameter direkt aus dem Request, um zu sehen, was ankommt
         request.getParameterMap()
                 .forEach((key, value) -> log.debug("Request Param: {} = {}", key, Arrays.toString(value)));
 
@@ -161,8 +146,6 @@ public class StudentController {
         }
 
         try {
-            // Sammle alle Question-IDs, die im Request vorkommen (sowohl Freetext als auch
-            // MC)
             Set<Long> questionIdsFromRequest = new HashSet<>();
             for (String paramName : Collections.list(request.getParameterNames())) {
                 if (paramName.startsWith("answersFreetext[") && paramName.endsWith("]")) {
@@ -181,24 +164,19 @@ public class StudentController {
             }
             log.debug("Found question IDs in request to process: {}", questionIdsFromRequest);
 
-            // Iteriere über die gefundenen Question-IDs und verarbeite sie
             for (Long questionId : questionIdsFromRequest) {
                 String submittedText = null;
                 Set<Long> selectedOptionIds = null;
 
-                // Versuche, Freitext für diese questionId zu bekommen
                 String freetextParamName = "answersFreetext[" + questionId + "]";
                 String[] freetextValues = request.getParameterValues(freetextParamName);
                 if (freetextValues != null && freetextValues.length > 0) {
-                    // Nimm den ersten Wert (sollte nur einer sein für Textarea)
                     submittedText = freetextValues[0];
                     log.debug("Processing FreeText for question {}: '{}'", questionId, submittedText);
                 }
 
-                // Versuche, MC-Optionen für diese questionId zu bekommen
                 String mcParamName = "answersMC[" + questionId + "]";
-                String[] mcOptionValues = request.getParameterValues(mcParamName); // Gibt alle Werte für diesen Namen
-                                                                                   // zurück
+                String[] mcOptionValues = request.getParameterValues(mcParamName);
 
                 if (mcOptionValues != null && mcOptionValues.length > 0) {
                     selectedOptionIds = new HashSet<>();
@@ -212,15 +190,11 @@ public class StudentController {
                     log.debug("Processing MC for question {}: Options {}", questionId, selectedOptionIds);
                 }
 
-                // Speichere die Submission, wenn Text oder Optionen vorhanden sind
-                // Oder auch, wenn keine MC-Optionen gewählt wurden (leeres Set speichern)
                 if (submittedText != null || selectedOptionIds != null) {
                     testService.saveOrUpdateSubmission(testId, questionId, studentId, submittedText,
-                            selectedOptionIds != null ? selectedOptionIds : Collections.emptySet()); // Stelle sicher,
-                                                                                                     // dass Set nicht
-                                                                                                     // null ist
-                } else if (mcOptionValues != null) { // Es war eine MC-Frage, aber nichts ausgewählt
-                    log.debug("MC question {} had no options selected. Saving empty selection.", questionId);
+                            selectedOptionIds != null ? selectedOptionIds : Collections.emptySet());
+                } else if (mcOptionValues != null) {
+                    log.debug("MC question {} had no options selected. Saving empty selection.");
                     testService.saveOrUpdateSubmission(testId, questionId, studentId, null, Collections.emptySet());
                 }
             }

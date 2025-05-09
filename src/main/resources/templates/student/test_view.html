@@ -154,8 +154,8 @@
         font-size: 1rem;
         font-weight: 500;
         transition: background-color 0.2s ease;
-        display: block; /* Eigene Zeile */
-        margin: 20px auto 0 auto; /* Zentrieren und Abstand nach oben */
+        display: block;
+        margin: 20px auto 0 auto;
       }
 
       button[type="submit"]:hover:not(:disabled) {
@@ -226,37 +226,16 @@
         >
       </p>
 
-      <div
-        th:if="${isReadOnly}"
-        class="status-message readonly-info"
-        <!--
-        Klasse
-        hinzugefügt
-        --
-      >
-        > Dieser Test ist nicht mehr bearbeitbar (Endzeitpunkt erreicht oder
-        noch nicht gestartet).
+      <div th:if="${isReadOnly}" class="status-message readonly-info">
+        Dieser Test ist nicht mehr bearbeitbar (Endzeitpunkt erreicht oder noch
+        nicht gestartet).
       </div>
 
       <!-- Anzeige von Erfolgs-/Fehlermeldungen -->
-      <div
-        th:if="${successMessage}"
-        class="status-message success-message"
-        <!--
-        Klasse
-        hinzugefügt
-        --
-      >
+      <div th:if="${successMessage}" class="status-message success-message">
         th:text="${successMessage}" >
       </div>
-      <div
-        th:if="${errorMessage}"
-        class="status-message error-message"
-        <!--
-        Klasse
-        hinzugefügt
-        --
-      >
+      <div th:if="${errorMessage}" class="status-message error-message">
         th:text="${errorMessage}" >
       </div>
 

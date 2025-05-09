@@ -7,13 +7,11 @@ import org.springframework.data.relational.core.mapping.Table;
  * Repräsentiert eine Antwortmöglichkeit für eine Multiple-Choice-Frage.
  * Gehört zur Question und damit zum Test-Aggregat.
  */
-@Table("answer_options") // Map record to the 'answer_options' table
+@Table("answer_options")
 public record AnswerOption(
-        @Id Long id, // Primary Key
+        @Id Long id,
         String optionText, // Text der Antwortmöglichkeit (HTML erlaubt)
-        boolean correct // Ist diese Option korrekt?
-) {
-    // Konstruktor für neue Optionen ohne ID
+        boolean correct) {
     public AnswerOption(String optionText, boolean correct) {
         this(null, optionText, correct);
     }

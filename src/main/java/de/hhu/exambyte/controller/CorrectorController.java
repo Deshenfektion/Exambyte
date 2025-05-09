@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/corrector")
-@Secured("ROLE_CORRECTOR") // Sicherstellen, dass nur Korrektoren Zugriff haben
+@Secured("ROLE_CORRECTOR")
 public class CorrectorController {
 
     private static final Logger log = LoggerFactory.getLogger(CorrectorController.class);
@@ -29,11 +29,9 @@ public class CorrectorController {
         this.correctionService = correctionService;
     }
 
-    // Helper für Corrector ID (optional, aber gut für Logs)
     private String getCorrectorId(OAuth2User principal) {
         if (principal == null)
             return "UNKNOWN_CORRECTOR";
-        // Passe dies an, wie du User identifizierst ('login' oder 'id')
         return principal.getAttribute("login");
     }
 
@@ -44,7 +42,7 @@ public class CorrectorController {
 
         List<SubmissionForCorrectionDto> submissions = correctionService.findUnscoredFreitextSubmissions();
         model.addAttribute("submissions", submissions);
-        model.addAttribute("username", correctorId); // Für Anzeige im Template
+        model.addAttribute("username", correctorId);
 
         return "corrector/dashboard";
     }
@@ -61,8 +59,7 @@ public class CorrectorController {
         if (submissionDtoOpt.isEmpty()) {
             log.warn("Submission {} not found for correction.", submissionId);
             model.addAttribute("errorMessage", "Einreichung nicht gefunden.");
-            // TODO: Bessere Fehlerseite oder Redirect mit Flash Attribut
-            return "corrector/dashboard"; // Zurück zum Dashboard
+            return "corrector/dashboard";
         }
 
         model.addAttribute("submissionDto", submissionDtoOpt.get());
@@ -85,19 +82,14 @@ public class CorrectorController {
             correctionService.saveGrade(submissionId, score, feedback, correctorId);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Bewertung für Einreichung " + submissionId + " erfolgreich gespeichert.");
-            return "redirect:/corrector/dashboard"; // Zurück zum Dashboard
+            return "redirect:/corrector/dashboard";
 
         } catch (IllegalArgumentException | NoSuchElementException e) {
             log.warn("Failed to save grade for submission {}: {}", submissionId, e.getMessage());
-            // Fehlermeldung zurück zum Formular geben
             redirectAttributes.addFlashAttribute("errorMessage", "Speichern fehlgeschlagen: " + e.getMessage());
-            // Wichtig: Parameter für das Formular wieder hinzufügen, damit der Nutzer es
-            // korrigieren kann
-            // (Besser wäre es, das Form-Objekt direkt im Model zu behalten, aber für den
-            // Anfang reicht Redirect)
             redirectAttributes.addFlashAttribute("submittedScore", score);
             redirectAttributes.addFlashAttribute("submittedFeedback", feedback);
-            return "redirect:/corrector/submissions/" + submissionId; // Zurück zum Formular der Submission
+            return "redirect:/corrector/submissions/" + submissionId;
         } catch (Exception e) {
             log.error("Unexpected error grading submission {}: {}", submissionId, e.getMessage(), e);
             redirectAttributes.addFlashAttribute("errorMessage", "Ein unerwarteter Fehler ist aufgetreten.");

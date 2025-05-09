@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils; // Für String-Prüfungen
+import org.springframework.util.StringUtils;
 
 import de.hhu.exambyte.domain.model.Question;
 import de.hhu.exambyte.domain.model.QuestionType;
@@ -24,9 +24,8 @@ public class CorrectionServiceImpl implements CorrectionService {
     private static final Logger log = LoggerFactory.getLogger(CorrectionServiceImpl.class);
 
     private final SubmissionRepository submissionRepository;
-    private final QuestionRepository questionRepository; // Brauchen wir für Fragetext/MaxPunkte
+    private final QuestionRepository questionRepository;
 
-    // Repositories injizieren
     public CorrectionServiceImpl(SubmissionRepository submissionRepository, QuestionRepository questionRepository) {
         this.submissionRepository = submissionRepository;
         this.questionRepository = questionRepository;
@@ -112,8 +111,6 @@ public class CorrectionServiceImpl implements CorrectionService {
             throw new IllegalArgumentException("Punktzahl muss zwischen 0 und " + question.maxPoints() + " liegen.");
         }
 
-        // WICHTIG: Feedback MUSS gegeben werden, wenn NICHT die volle Punktzahl
-        // erreicht wird UND der Text nicht leer ist.
         // Die Anforderung "Alle nicht-leeren Einreichungen, die nicht mit maximaler
         // Punktzahl bewertet werden, müssen immer einen Feedbacktext enthalten."
         boolean isEmptySubmission = !StringUtils.hasText(submission.submittedText());
